@@ -58,6 +58,17 @@ If you'd like to execute the provided notebooks, we offer two possibilities:
 - Online thanks to [Binder](https://mybinder.org/). This takes around 10 minutes to get ready, but does not require any kind of setup on your end. Click here to get started: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/volkamerlab/TeachOpenCADD/master). Once it has loaded, you can navigate to `teachopencadd/talktorials/` to find the executable notebooks.
 - Locally using our `conda` package. More details in this [section of the documentation](https://projects.volkamerlab.org/teachopencadd/installing.html).
 
+
+## Open in Google Colab
+
+| Talktorial | Topic                                           |
+|     :-:    | :---                                            |
+|    T001    | [T001 · Compound data acquisition (ChEMBL)][1]  | 
+|            | | 
+
+
+[1]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/pip_sepenv/teachopencadd/talktorials/T001_query_chembl/talktorial.ipynb
+
 ## TeachOpenCADD KNIME workflows
 
 <!-- markdown-link-check-disable-next-line -->
