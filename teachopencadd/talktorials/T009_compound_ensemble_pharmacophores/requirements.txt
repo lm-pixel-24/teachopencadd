@@ -1,5 +1,7 @@
 python=3.12.0
 notebook
-rdkit
-pandas
+nglview
+scikit-learn
 matplotlib
+pandas
+rdkit
