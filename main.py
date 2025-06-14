@@ -1,139 +1,106 @@
 import os
-import sys
-import venv
-import subprocess
 import glob
-import shutil
 from pathlib import Path
+import re
+import sys
+import subprocess
 
-HERE = Path(".").absolute()
 BASE_DIR = Path("teachopencadd") / "talktorials"
 REQ_FILE = "requirements.txt"
-VENV_DIR = ".venv"
 TALKTORIAL_FILE = "talktorial.ipynb"
 
 
+def package_info(req_file):
+    """
+    Finds python version and required pckages.
+
+    Args:
+        req_file (str): requirements.txt file path.
+
+    Return:
+        str : python version. e.g. '3.12.0'
+        list : list of required packages. e.g. ['pandas', 'numpy',].
+    """
+    with open(req_file, 'r') as f:
+        pkg_info = f.read().strip()
+    py_vrs = pkg_info.split('\n')[0]
+    assert py_vrs.split('=')[0] == 'python', \
+        'First package in requirements file must be '\
+        'python with specified version. e.g. python=3.12.0'
+    py_vrs = re.findall(r"[\d.]+", py_vrs)[0]
+    pkgs_lst = pkg_info.split('\n')[1:] 
+    return py_vrs, pkgs_lst
+
+
+def conda_env_list():
+    """
+    List all conda environments.
+    returns:
+        list: List of conda environment names.
+    """
+    result = subprocess.run(["conda", "env", "list"], 
+                            capture_output=True, text=True)
+    if result.returncode != 0:
+        controlled_crash("Error listing conda environments: " + \
+                        result.stderr)
+    
+    envs = result.stdout.splitlines()
+    return [line.split()[0] for line in envs 
+            if line and not line.startswith("#")]
+
+
+def configure_env(prefix, python_version, pkg_list):
+    """
+    Configure a conda environment with the specified 
+    python version and requirements.
+    
+    Args:
+        prefix (str): The prefix for the environment, e.g. 'T001'.
+        python_version (str): The python version to use, e.g. '3.12.0'.
+        pkg_list (list): list f py packages to install, e.g.
+                        ['pandas', 'numpy', 'tqdm',].
+    """
+    #env convention:TXXX_py* e.g. T001_312
+    env_name = prefix + '_' + python_version.replace('.', '')
+    existing_envs = conda_env_list()
+    if not env_name in existing_envs:
+        print(f"Creating conda environment '{env_name}'\
+                 with Python {python_version}")
+        result = subprocess.run(["conda", "create", "-n", env_name, 
+                        f"python={python_version}", "--yes"], check=True,
+                        capture_output=True, text=True)
+        if result.returncode != 0:
+            controlled_crash("Error listing conda environments: "\
+                             + result.stderr)
+
+    print(f"Installing dependencies in '{env_name}'...")
+    pkg_install_cmd = 'conda run -n '+ env_name + ' pip install '
+    pkg_install_cmd += ' '.join(pkg_list)
+    result = subprocess.run(pkg_install_cmd, shell=True, 
+                            capture_output=True, text=True)
+    if result.returncode != 0:
+            controlled_crash("Error installing dependencies: "\
+                             + result.stderr)
+    return env_name
+
+
 def find_talktorial_folder(txxx):
-    search_pattern = HERE / BASE_DIR / f"{txxx}_*"
+    search_pattern = BASE_DIR / f"{txxx}_*"
     matches = glob.glob(str(search_pattern))
-
     if not matches:
-        controlled_crash(f"No folder found for '{txxx}_*' in '{BASE_DIR}'.")
-
+        controlled_crash(f"No folder found for '{txxx}_*' \
+                        in '{BASE_DIR}'.")
     return Path(matches[0])
 
 
-def install_dependencies(talktorial_dir):
-    req_path = talktorial_dir / REQ_FILE
-    if req_path.exists():
-        print(f"Installing dependencies in {talktorial_dir}")
-        pip(f"install -r {req_path}", talktorial_dir)
-    else:
-        print(
-            f"Warning: '{req_path}' not found. Skipping dependency installation.",
-            file=sys.stderr,
-        )
-
-
-def has_uv():
-    return shutil.which("uv") is not None
-
-
-def call(command, talktorial_dir, **kwargs):
-    local_env = os.environ.copy()
-    local_env = {
-        k: v for k, v in local_env.items() if ("CONDA" not in k and "FORGE" not in k)
-    }
-    # probably different on windows...
-    local_env["PATH"] = str(talktorial_dir / VENV_DIR / "bin") + ":" + local_env["PATH"]
-
-    match str(type(command)):
-        case "<class 'str'>":
-            command = command.split()
-        case "<class 'list'>":
-            pass
-        case ty:
-            raise ValueError(f"unexpected command {command} with type {ty}")
-
-    print(" ".join(command))
-    return subprocess.run(
-        command,
-        cwd=talktorial_dir,
-        env=local_env,
-        check=True,
-        capture_output=True,
-        **kwargs,
-    )
-
-
-def pip(command, talktorial_dir):
-    """Run pip (or uv if available) in the venv."""
-    command = command.split()
-    if has_uv():
-        base_cmd = ["uv", "pip"]
-    else:
-        pyexec = python_executable(talktorial_dir)
-        base_cmd = [pyexec, "-m", "pip"]
-
-    call(base_cmd + command, talktorial_dir)
-
-
-def python_executable(talktorial_dir: Path):
-    """Return the path to the Python interpreter inside the virtual environment."""
-    return str(
-        talktorial_dir
-        / VENV_DIR
-        / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
-    )
-
-
-def create_venv(talktorial_dir: Path):
-    """Create a virtual environment if it doesn't exist."""
-    venv_path = talktorial_dir / VENV_DIR
-    if not venv_path.exists():
-        print(f"Creating virtual environment in '{venv_path}'...")
-        venv.create(venv_path, with_pip=True)
-
-
-def ensure_jupyter_kernel(talktorial_dir: Path, kernel_name: str):
-    """Ensure Jupyter and the correct kernel are installed inside the virtual environment."""
-    print("Ensuring Jupyter and ipykernel are installed inside venv...")
-    pip("install jupyter ipykernel", talktorial_dir)
-
-    # Register the virtual environment as a Jupyter kernel
-    pyexec = python_executable(talktorial_dir)
-    try:
-        call(
-            [
-                pyexec,
-                "-m",
-                "ipykernel",
-                "install",
-                "--user",
-                "--name",
-                kernel_name,
-                "--display-name",
-                f"Python (venv {kernel_name})",
-            ],
-            talktorial_dir,
-        )
-    except subprocess.CalledProcessError as e:
-        controlled_crash(e.stderr.decode())
-
-
-def start_talktorial(talktorial_dir: Path, talktorial_id: str):
-    """Start the Jupyter Notebook inside the correct virtual environment."""
+def start_talktorial(talktorial_dir: Path, env_name: str):
+    """Start the Jupyter Notebook inside the correct conda environment."""
     talktorial = talktorial_dir / TALKTORIAL_FILE
     if talktorial.exists():
         print(f"Starting talktorial {talktorial}")
-        pyexec = python_executable(talktorial_dir)
-
-        ensure_jupyter_kernel(talktorial_dir, talktorial_id)
-
-        res = call(
-            "jupyter notebook talktorial.ipynb",
-            talktorial_dir,
-        )
+        notebook_cmd = f"conda run -n {env_name} jupyter notebook {
+                                                        str(talktorial)}"
+        subprocess.run(notebook_cmd, shell=True)
     else:
         controlled_crash(f"Error: Notebook '{talktorial}' not found.")
 
@@ -146,20 +113,27 @@ def controlled_crash(reason, code=1):
 
 def main():
     if len(sys.argv) != 2:
-        controlled_crash("Usage: python start_talktorial.py TXXX")
+        controlled_crash("Usage: python main.py TXXX")
 
     txxx = sys.argv[1]
-
     if not (txxx.startswith("T") and txxx[1:].isdigit() and len(txxx) == 4):
-        controlled_crash(
-            "Argument must be in the format TXXX (e.g., T001, T023, T030)."
-        )
+        controlled_crash("Argument must be in the format TXXX \
+                        (e.g., T001, T023, T030).")
 
     talktorial_dir = find_talktorial_folder(txxx)
-
-    create_venv(talktorial_dir)
-    install_dependencies(talktorial_dir)
-    start_talktorial(talktorial_dir, txxx)
+    print(f"Found talktorial folder: \n{talktorial_dir}")
+    req_path = talktorial_dir / REQ_FILE
+    req_path = str(req_path) # convert posixpath to str
+    if not os.path.exists(req_path):
+        controlled_crash(f"Requirements file '{REQ_FILE}' \
+                            not found in {talktorial_dir}.")
+    python_version, pkg_list = package_info(req_path)
+    print(f"Python version: {python_version}")
+    print(f"Package list: \n{pkg_list}")
+    
+    env_name = configure_env(txxx, python_version, pkg_list)
+    print(f"Configured environment: {env_name}")
+    start_talktorial(talktorial_dir, env_name)
 
 
 if __name__ == "__main__":
