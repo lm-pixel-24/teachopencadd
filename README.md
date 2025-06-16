@@ -61,13 +61,39 @@ If you'd like to execute the provided notebooks, we offer two possibilities:
 
 ## Open in Google Colab
 
-| Talktorial | Topic                                           |
+| Talktorial | Title                                           |
 |     :-:    | :---                                            |
-|    T001    | [T001 · Compound data acquisition (ChEMBL)][1]  | 
-|            | | 
+|    T001    | [Compound data acquisition (ChEMBL)][1]  | 
+|    T002    | [Molecular filtering: ADME and lead-likeness criteria][2]|
+|    T003    | [Molecular filtering: unwanted substructures][3]|
+|    T004    | [Ligand-based screening: compound similarity][4]|
+|    T005    | [Compound clustering][5]| 
+|    T006    | [Maximum common substructure][6]|
+|    T007    | [Ligand-based screening: machine learning][7]|
+|    T008    | [Protein data acquisition: Protein Data Bank (PDB)][8]|
+|    T009    | [Ligand-based pharmacophores][9]|
+|    T010    | [Binding site similarity and off-target prediction][10]|
 
 
-[1]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/pip_sepenv/teachopencadd/talktorials/T001_query_chembl/talktorial.ipynb
+[1]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T001_query_chembl/talktorial.ipynb
+
+[2]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T002_compound_adme/talktorial.ipynb
+
+[3]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T003_compound_unwanted_substructures/talktorial.ipynb
+
+[4]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T004_compound_similarity/talktorial.ipynb
+
+[5]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T005_compound_clustering/talktorial.ipynb
+
+[6]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T006_compound_maximum_common_substructures/talktorial.ipynb
+
+[7]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T007_compound_activity_machine_learning/talktorial.ipynb
+
+[8]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T008_query_pdb/talktorial.ipynb
+
+[9]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T009_compound_ensemble_pharmacophores/talktorial.ipynb
+
+[10]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T010_binding_site_comparison/talktorial.ipynb
 
 ## TeachOpenCADD KNIME workflows
 
