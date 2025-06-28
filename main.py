@@ -24,7 +24,7 @@ def package_info(req_file):
     with open(req_file, 'r') as f:
         pkg_info = f.read().strip()
     py_vrs = pkg_info.split('\n')[0]
-    assert py_vrs.split('=')[0] == 'python', \
+    assert py_vrs.split('=')[0] == '#python', \
         'First package in requirements file must be '\
         'python with specified version. e.g. python=3.12.0'
     py_vrs = re.findall(r"[\d.]+", py_vrs)[0]
