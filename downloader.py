@@ -69,12 +69,12 @@ def main():
     image_folder =  "images"
 
     download_requirements(
-            f'{base_requirements_url}/{talktorial}/requirements.txt')
+            f'{base_requirements_url}/{talktorial}/requirements.txt?ref=sepenv')
     download_contents(
-            f'{base_images_url}/{talktorial}/{image_folder}',
+            f'{base_images_url}/{talktorial}/{image_folder}?ref=sepenv',
                     image_folder)
     download_contents(
-            f'{base_data_url}/{talktorial}/{data_folder}',
+            f'{base_data_url}/{talktorial}/{data_folder}?ref=sepenv',
                     data_folder)
     print("Download completed successfully.")
 
