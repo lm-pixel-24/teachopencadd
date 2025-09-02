@@ -1,0 +1,43 @@
+name: Run Takltorial
+
+on:
+  push:
+    branches:
+      - sepenv     
+  pull_request:
+    branches:
+      - sepenv  
+
+jobs:
+  run-main-scripts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Miniconda (use base env)
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: base
+          auto-activate-base: true
+          python-version: 3.12
+
+      - name: Check Python and Conda versions
+        shell: bash -l {0}
+        run: |
+          which python
+          python --version
+          conda list
+
+      - name: T001
+        shell: bash -l {0}
+        run: python main.py T001
+
+      - name: T002
+        shell: bash -l {0}
+        run: python main.py T002
+
+      - name: T003
+        shell: bash -l {0}
+        run: python main.py T003
