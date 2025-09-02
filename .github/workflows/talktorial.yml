@@ -21,6 +21,7 @@ jobs:
         with:
           activate-environment: base
           auto-activate-base: true
+          miniconda-version: "latest"
           python-version: 3.12
 
       - name: Check Python and Conda versions
