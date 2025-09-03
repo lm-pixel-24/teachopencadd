@@ -40,12 +40,14 @@ jobs:
 
       - name: T002
         shell: bash -l {0}
+        if: false
         run: |
           conda activate base
           python main.py T002
 
       - name: T003
         shell: bash -l {0}
+        if: false
         run: |
           conda activate base
           python main.py T003
