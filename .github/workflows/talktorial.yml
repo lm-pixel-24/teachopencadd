@@ -1,4 +1,4 @@
-name: Run Takltorial
+name: Run Talktorial
 
 on:
   push:
@@ -35,8 +35,7 @@ jobs:
       - name: T001
         shell: bash -l {0}
         run: |
-          conda activate base
-          python main.py T001
+          conda run --no-capture-output python main.py T001
 
       - name: T002
         shell: bash -l {0}
