@@ -84,6 +84,27 @@ def configure_env(prefix, python_version, pkg_list):
     return env_name
 
 
+def set_ipykernel(env_name):
+    """
+    Set the ipykernel for the conda environment.
+    """
+    print(f"Setting ipykernel for '{env_name}'...")
+    # install ipykernel
+    result = subprocess.run(
+                        f"conda run -n {env_name} pip install ipykernel",
+                        shell=True, capture_output=True, text=True)
+    if result.returncode != 0:
+        controlled_crash("Error installing ipykernel: " + result.stderr)
+    # set ipykernel
+    result = subprocess.run(
+            f"conda run -n {env_name} python -m ipykernel install --user \
+            --name {env_name} --display-name '{env_name}'",
+            shell=True, capture_output=True, text=True)
+    if result.returncode != 0:
+            controlled_crash("Error setting ipykernel: " + result.stderr)
+    print(f"ipykernel for '{env_name}' set successfully.")
+
+
 def find_talktorial_folder(txxx):
     search_pattern = BASE_DIR / f"{txxx}_*"
     matches = glob.glob(str(search_pattern))
@@ -133,6 +154,7 @@ def main():
     
     env_name = configure_env(txxx, python_version, pkg_list)
     print(f"Configured environment: {env_name}")
+    set_ipykernel(env_name)
     start_talktorial(talktorial_dir, env_name)
 
 
