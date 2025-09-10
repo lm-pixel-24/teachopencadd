@@ -62,19 +62,20 @@ def main():
         sys.exit(1)
     
     talktorial = sys.argv[1]
-    base_requirements_url = "https://raw.githubusercontent.com/volkamerlab/teachopencadd/sepenv/teachopencadd/talktorials"
+    ref_branch = "sepenv" # Branch to download from, e.g., "main" or "sepenv".
+    base_requirements_url = f"https://raw.githubusercontent.com/volkamerlab/teachopencadd/{ref_branch}/teachopencadd/talktorials"
     base_data_url = "https://api.github.com/repos/volkamerlab/teachopencadd/contents/teachopencadd/talktorials"
     base_images_url = "https://api.github.com/repos/volkamerlab/teachopencadd/contents/teachopencadd/talktorials"
     data_folder = "data"
     image_folder =  "images"
 
     download_requirements(
-            f'{base_requirements_url}/{talktorial}/requirements.txt?ref=sepenv')
+            f'{base_requirements_url}/{talktorial}/requirements.txt?ref={ref_branch}')
     download_contents(
-            f'{base_images_url}/{talktorial}/{image_folder}?ref=sepenv',
+            f'{base_images_url}/{talktorial}/{image_folder}?ref={ref_branch}',
                     image_folder)
     download_contents(
-            f'{base_data_url}/{talktorial}/{data_folder}?ref=sepenv',
+            f'{base_data_url}/{talktorial}/{data_folder}?ref={ref_branch}',
                     data_folder)
     print("Download completed successfully.")
 
