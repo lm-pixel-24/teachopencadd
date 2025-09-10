@@ -1,0 +1,16 @@
+#python=3.11.0
+notebook
+numpy
+matplotlib
+seaborn
+nglview
+pypdb
+https://github.com/volkamerlab/opencadd/archive/master.tar.gz
+MDAnalysis
+pandas
+redo
+bravado
+biopandas
+rdkit
+biotite
+bio
