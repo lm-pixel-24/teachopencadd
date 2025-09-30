@@ -150,7 +150,7 @@ def controlled_crash(reason, code=1):
 
 
 def main():
-    if len(sys.argv) == 2 or len(sys.argv) == 3:
+    if (len(sys.argv) != 2) and (len(sys.argv) != 3):
         controlled_crash("Usage: python main.py TXXX or python main.py TXXX test")
 
     txxx = sys.argv[1]
@@ -172,7 +172,7 @@ def main():
     env_name = configure_env(txxx, python_version, pkg_list)
     print(f"Configured environment: {env_name}")
     set_ipykernel(env_name)
-    
+
     if len(sys.argv) == 3 and sys.argv[2] == "test":
         test_talktorial(talktorial_dir, env_name)
     else:
