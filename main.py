@@ -126,6 +126,23 @@ def start_talktorial(talktorial_dir: Path, env_name: str):
         controlled_crash(f"Error: Notebook '{talktorial}' not found.")
 
 
+def test_talktorial(talktorial_dir: Path, env_name: str):
+    """Test the Jupyter Notebook inside the correct conda environment."""
+    talktorial = talktorial_dir / TALKTORIAL_FILE
+    if talktorial.exists():
+        print(f"Testing talktorial {talktorial}")
+        result = subprocess.run(
+                        f"conda run -n {env_name} pip install pytest nbval",
+                        shell=True, capture_output=True, text=True)
+        if result.returncode != 0:
+            controlled_crash("Error installing pytest nbval: " + result.stderr)
+
+        notebook_cmd = f"conda run --no-capture-output -n {env_name} pytest --nbval-lax {str(talktorial)}"
+        subprocess.run(notebook_cmd, shell=True)
+    else:
+        controlled_crash(f"Error: Notebook '{talktorial}' not found.")
+
+
 def controlled_crash(reason, code=1):
     """Print an error message and exit."""
     print("Error: " + reason, file=sys.stderr)
@@ -133,8 +150,8 @@ def controlled_crash(reason, code=1):
 
 
 def main():
-    if len(sys.argv) != 2:
-        controlled_crash("Usage: python main.py TXXX")
+    if len(sys.argv) == 2 or len(sys.argv) == 3:
+        controlled_crash("Usage: python main.py TXXX or python main.py TXXX test")
 
     txxx = sys.argv[1]
     if not (txxx.startswith("T") and txxx[1:].isdigit() and len(txxx) == 4):
@@ -155,7 +172,11 @@ def main():
     env_name = configure_env(txxx, python_version, pkg_list)
     print(f"Configured environment: {env_name}")
     set_ipykernel(env_name)
-    start_talktorial(talktorial_dir, env_name)
+    
+    if len(sys.argv) == 3 and sys.argv[2] == "test":
+        test_talktorial(talktorial_dir, env_name)
+    else:
+        start_talktorial(talktorial_dir, env_name)
 
 
 if __name__ == "__main__":
