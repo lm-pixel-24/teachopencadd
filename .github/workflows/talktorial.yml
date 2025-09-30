@@ -36,7 +36,7 @@ jobs:
       - name: T001
         shell: bash -l {0}
         run: |
-          conda run --no-capture-output pytest -k "T001" tests/test_talktorial.py --maxfail=1 --disable-warnings -q
+          conda run --no-capture-output pytest -k "T001" teachopencadd/tests/test_talktorial.py --maxfail=1 --disable-warnings -q
 
       - name: T002
         shell: bash -l {0}
