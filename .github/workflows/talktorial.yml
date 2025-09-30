@@ -25,28 +25,27 @@ jobs:
           echo "$HOME/anaconda/bin" >> $GITHUB_PATH
           source $HOME/anaconda/bin/activate
 
-      - name: Check Python and Conda versions
+      - name: Check Python, Conda and set up environment
         shell: bash -l {0}
         run: |
           which python
           python --version
+          conda run pip install pytest nbval
           conda list
 
       - name: T001
         shell: bash -l {0}
         run: |
-          conda run --no-capture-output python main.py T001
+          conda run --no-capture-output pytest --nbval-lax teachopencadd/talktorials/T001_query_chembl/talktorial.ipynb
 
       - name: T002
         shell: bash -l {0}
         if: false
         run: |
-          conda activate base
-          python main.py T002
+          conda run --no-capture-output python main.py T002
 
       - name: T003
         shell: bash -l {0}
         if: false
         run: |
-          conda activate base
-          python main.py T003
+          conda run --no-capture-output python main.py T003
