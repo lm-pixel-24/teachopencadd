@@ -1,9 +1,11 @@
 import os
-import glob
-from pathlib import Path
 import re
 import sys
+import glob
+import nbformat
 import subprocess
+from pathlib import Path
+
 
 BASE_DIR = Path("teachopencadd") / "talktorials"
 REQ_FILE = "requirements.txt"
@@ -105,6 +107,24 @@ def set_ipykernel(env_name):
     print(f"ipykernel for '{env_name}' set successfully.")
 
 
+def set_nb_kernelspec(talktorial_dir: Path, env_name: str):
+    """
+    Set the kernel spec of the notebook to match the conda env.
+    """
+    nb_path = talktorial_dir / TALKTORIAL_FILE
+    if nb_path.exists():
+        print(f"Set kernel spec for {nb_path} to {env_name}")
+        nb = nbformat.read(nb_path, as_version=4)
+        nb.metadata.kernelspec = {
+            "name": env_name.lower(),
+            "display_name": env_name,
+            "language": "python"
+        }
+        nbformat.write(nb, nb_path)
+    else:
+        controlled_crash(f"Error: Notebook '{nb_path}' not found.")
+
+
 def find_talktorial_folder(txxx):
     search_pattern = BASE_DIR / f"{txxx}_*"
     matches = glob.glob(str(search_pattern))
@@ -172,6 +192,7 @@ def main():
     env_name = configure_env(txxx, python_version, pkg_list)
     print(f"Configured environment: {env_name}")
     set_ipykernel(env_name)
+    set_nb_kernelspec(talktorial_dir, env_name)
 
     if len(sys.argv) == 3 and sys.argv[2] == "test":
         test_talktorial(talktorial_dir, env_name)
