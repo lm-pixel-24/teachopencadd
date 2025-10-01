@@ -5,3 +5,4 @@ tqdm
 rdkit
 chembl-webresource-client
 notebook
+matplotlib
