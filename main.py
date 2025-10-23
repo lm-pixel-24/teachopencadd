@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import glob
+import argparse
 import nbformat
 import subprocess
 from pathlib import Path
@@ -169,15 +170,7 @@ def controlled_crash(reason, code=1):
     sys.exit(code)
 
 
-def main():
-    if (len(sys.argv) != 2) and (len(sys.argv) != 3):
-        controlled_crash("Usage: python main.py TXXX or python main.py TXXX test")
-
-    txxx = sys.argv[1]
-    if not (txxx.startswith("T") and txxx[1:].isdigit() and len(txxx) == 4):
-        controlled_crash("Argument must be in the format TXXX \
-                        (e.g., T001, T023, T030).")
-
+def main(txxx, test_mode=False):
     talktorial_dir = find_talktorial_folder(txxx)
     print(f"Found talktorial folder: \n{talktorial_dir}")
     req_path = talktorial_dir / REQ_FILE
@@ -194,11 +187,15 @@ def main():
     set_ipykernel(env_name)
     set_nb_kernelspec(talktorial_dir, env_name)
 
-    if len(sys.argv) == 3 and sys.argv[2] == "test":
+    if test_mode:
         test_talktorial(talktorial_dir, env_name)
     else:
         start_talktorial(talktorial_dir, env_name)
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="CLI.")
+    parser.add_argument("--talktorial", "-t", help="Taltorial to run, e.g., T001", required=True)
+    parser.add_argument("--test", default=False, help="run pytest.")
+    args = parser.parse_args()
+    main(args.talktorial, args.test)
