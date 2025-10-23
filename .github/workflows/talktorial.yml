@@ -36,16 +36,16 @@ jobs:
       - name: T001
         shell: bash -l {0}
         run: |
-          conda run --no-capture-output python main.py -t T001 True
+          conda run --no-capture-output python main.py -t T001 --test True
 
       - name: T002
         shell: bash -l {0}
         if: false
         run: |
-          conda run --no-capture-output python main.py -t T002 True
+          conda run --no-capture-output python main.py -t T002 --test True
 
       - name: T003
         shell: bash -l {0}
         if: false
         run: |
-          conda run --no-capture-output python main.py -t T003 True
+          conda run --no-capture-output python main.py -t T003 --test True
