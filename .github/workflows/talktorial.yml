@@ -9,8 +9,12 @@ on:
       - sepenv  
 
 jobs:
-  run-main-scripts:
+  run-cli-scripts:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false   # continue others even if one fails
+      matrix:
+        talktorial: [T001, T002, ] 
 
     steps:
       - name: Checkout code
@@ -33,19 +37,8 @@ jobs:
           conda run pip install pytest nbval
           conda list
 
-      - name: T001
+      - name: Run Talktorial ${{ matrix.talktorial}}
         shell: bash -l {0}
         run: |
-          conda run --no-capture-output python main.py -t T001 --test True
-
-      - name: T002
-        shell: bash -l {0}
-        if: false
-        run: |
-          conda run --no-capture-output python main.py -t T002 --test True
-
-      - name: T003
-        shell: bash -l {0}
-        if: false
-        run: |
-          conda run --no-capture-output python main.py -t T003 --test True
+          echo "Running ${{ matrix.talktorial }}"
+          conda run --no-capture-output python main.py -t ${{ matrix.talktorial}} --test True
