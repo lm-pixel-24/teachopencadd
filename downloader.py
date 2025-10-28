@@ -102,7 +102,7 @@ def main(talktorial, branch, output_dir):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Download TeachOpenCADD talktorials from a specific branch.")
     parser.add_argument("--talktorial", "-t", help="Taltorial to download, e.g., T001_query_chembl", required=True)
-    parser.add_argument("--branch", "-b", default=DEFAULT_BRANCH, help="Git branch to download from (default: master).")
+    parser.add_argument("--branch", "-b", default=DEFAULT_BRANCH, help="Git branch to download from (default: sepenv).")
     parser.add_argument("--output_dir", "-o", default=OUTPUT_DIR, help="download location.")
     args = parser.parse_args()
 
