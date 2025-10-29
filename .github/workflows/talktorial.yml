@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false   # continue others even if one fails
       matrix:
-        talktorial: [T001, T002, ] 
+        talktorial: [T001, T002, T003, T004, T005, T006, T007] 
 
     steps:
       - name: Checkout code
