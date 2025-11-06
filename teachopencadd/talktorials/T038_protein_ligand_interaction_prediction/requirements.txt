@@ -1,0 +1,14 @@
+#python=3.12.0
+torch
+torch_geometric
+pypdb
+rdkit
+biotite
+chembl_webresource_client
+tqdm
+numpy<2
+pandas
+matplotlib
+notebook
+ipywidgets
+jupyterlab-widgets
