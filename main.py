@@ -52,7 +52,7 @@ def conda_env_list():
             if line and not line.startswith("#")]
 
 
-def configure_env(prefix, python_version, pkg_list):
+def configure_env(prefix, python_version, req_file):
     """
     Configure a conda environment with the specified 
     python version and requirements.
@@ -60,8 +60,7 @@ def configure_env(prefix, python_version, pkg_list):
     Args:
         prefix (str): The prefix for the environment, e.g. 'T001'.
         python_version (str): The python version to use, e.g. '3.12.0'.
-        pkg_list (list): list f py packages to install, e.g.
-                        ['pandas', 'numpy', 'tqdm',].
+        req_file (str): requirements.txt file path.
     """
     #env convention:TXXX_py* e.g. T001_312
     env_name = prefix + '_' + python_version.replace('.', '')
@@ -77,9 +76,11 @@ def configure_env(prefix, python_version, pkg_list):
                              + result.stderr)
 
     print(f"Installing dependencies in '{env_name}'...")
-    pkg_install_cmd = 'conda run -n '+ env_name + ' pip install '
-    pkg_install_cmd += ' '.join(pkg_list)
-    result = subprocess.run(pkg_install_cmd, shell=True, 
+    #pkg_install_cmd = 'conda run -n '+ env_name + ' pip install '
+    #pkg_install_cmd += ' '.join(pkg_list)
+    req_file_install_cmd = 'conda run -n ' + env_name + ' pip install -r ' + req_file
+    print(f"Running command: {req_file_install_cmd}")
+    result = subprocess.run(req_file_install_cmd, shell=True, 
                             capture_output=True, text=True)
     if result.returncode != 0:
             controlled_crash("Error installing dependencies: "\
@@ -182,7 +183,7 @@ def main(txxx, test_mode=False):
     print(f"Python version: {python_version}")
     print(f"Package list: \n{pkg_list}")
     
-    env_name = configure_env(txxx, python_version, pkg_list)
+    env_name = configure_env(txxx, python_version, req_path)
     print(f"Configured environment: {env_name}")
     set_ipykernel(env_name)
     set_nb_kernelspec(talktorial_dir, env_name)
