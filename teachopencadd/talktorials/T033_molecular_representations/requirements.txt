@@ -6,6 +6,7 @@ biotite
 matplotlib
 tqdm
 pandas
+nglview
 notebook
 ipywidgets
 jupyterlab-widgets
