@@ -1,0 +1,11 @@
+#python=3.12
+torch
+torch_geometric
+torch-scatter
+numpy
+matplotlib
+tqdm
+pandas
+notebook
+ipywidgets
+jupyterlab-widgets
