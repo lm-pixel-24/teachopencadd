@@ -1,0 +1,11 @@
+#python=3.12
+numpy<2
+networkx
+rdkit
+biotite
+matplotlib
+tqdm
+pandas
+notebook
+ipywidgets
+jupyterlab-widgets
