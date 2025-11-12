@@ -1,0 +1,11 @@
+#python=3.11.0
+numpy
+pandas
+matplotlib
+bio
+bravado
+beautifulsoup4
+#ipynb pkgs
+notebook
+ipywidgets
+jupyterlab-widgets
