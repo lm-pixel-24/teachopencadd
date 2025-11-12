@@ -1,0 +1,18 @@
+#python=3.12.0
+numpy
+nglview
+matplotlib
+#ipynb pkgs
+notebook
+ipywidgets
+jupyterlab-widgets
+#OpenCADD pkgs
+MDAnalysis
+pandas
+redo
+bravado
+biopandas
+rdkit
+biotite
+bio
+https://github.com/volkamerlab/opencadd/archive/master.tar.gz
