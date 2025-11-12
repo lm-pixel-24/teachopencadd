@@ -2,7 +2,7 @@
 torch
 torch_geometric
 torch-scatter
-numpy
+numpy<2
 matplotlib
 tqdm
 pandas
