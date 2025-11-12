@@ -1,4 +1,9 @@
-pandas
-numpy
-matplotlib
+#python=3.12
 torch
+numpy<2
+matplotlib
+tqdm
+pandas
+notebook
+ipywidgets
+jupyterlab-widgets
