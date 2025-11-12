@@ -14,8 +14,28 @@ jobs:
     strategy:
       fail-fast: false   # continue others even if one fails
       matrix:
-        talktorial: [T002, T003, T004, T005, T006, T007, T034, T035, T036, T037, T038] #T001 is excluded as it has long runtime
-
+        talktorial:
+          #- T001 excluded as it has long runtime
+          - T002
+          - T003 
+          - T004
+          - T005
+          - T006
+          - T007
+          - T008
+          - T009
+          - T010
+          - T011
+          - T012
+          - T013
+          - T014
+          - T015
+          - T033
+          - T034
+          - T035
+          - T036
+          - T037
+          - T038
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
