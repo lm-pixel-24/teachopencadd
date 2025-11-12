@@ -1,11 +1,14 @@
 #python=3.11.0
-notebook
 numpy
 matplotlib
 seaborn
 nglview
 pypdb
-https://github.com/volkamerlab/opencadd/archive/master.tar.gz
+#ipynb pkgs
+notebook
+ipywidgets
+jupyterlab-widgets
+#OpenCADD pkgs
 MDAnalysis
 pandas
 redo
@@ -14,3 +17,4 @@ biopandas
 rdkit
 biotite
 bio
+https://github.com/volkamerlab/opencadd/archive/master.tar.gz
