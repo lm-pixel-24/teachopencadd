@@ -16,6 +16,7 @@ jobs:
       fail-fast: false   # continue others even if one fails
       matrix:
         talktorial:
+          - T001 # long runtime.
           - T002
           - T003 
           - T004
@@ -32,6 +33,17 @@ jobs:
           - T015
           - T016
           - T017
+          - T018
+          - T019
+          - T020
+          - T021
+          - T022
+          - T023
+          - T024
+          - T025
+          - T026
+          - T027
+          - T028
           - T033
           - T034
           - T035
@@ -39,14 +51,25 @@ jobs:
           - T037
           - T038
 
-        exclude:
-          - talktorial: T001 # long runtime.
-          - talktorial: T033 # memory overload due to DL packages.
-          - talktorial: T034 # memory overload due to DL packages.
-          - talktorial: T035 # memory overload due to DL packages.
-          - talktorial: T036 # memory overload due to DL packages.
-          - talktorial: T037 # memory overload due to DL packages.
-          - talktorial: T038 # memory overload due to DL packages.
+        #exclude:
+          #- talktorial: T008 # opencadd
+          #- talktorial: T010 # opencadd
+          #- talktorial: T011 # opencadd
+          #- talktorial: T012 # opencadd
+          #- talktorial: T014 # opencadd
+          #- talktorial: T015 # opencadd
+          #- talktorial: T016 # opencadd
+          #- talktorial: T018 # opencadd
+          #- talktorial: T023 # opencadd
+          #- talktorial: T025 # opencadd
+          #- talktorial: T026 # opencadd
+          #- talktorial: T019 # conda dependencies.
+          #- talktorial: T033 # memory overload due to DL packages.
+          #- talktorial: T034 # memory overload due to DL packages.
+          #- talktorial: T035 # memory overload due to DL packages.
+          #- talktorial: T036 # memory overload due to DL packages.
+          #- talktorial: T037 # memory overload due to DL packages.
+          #- talktorial: T038 # memory overload due to DL packages.
 
     steps:
       - name: Checkout code
