@@ -1,0 +1,12 @@
+#python=3.12.0
+numpy
+pandas
+rdkit
+seaborn
+matplotlib
+scikit-learn
+tensorflow
+#ipynb pkgs
+notebook
+ipywidgets
+jupyterlab-widgets
