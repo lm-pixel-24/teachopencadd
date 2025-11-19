@@ -11,11 +11,11 @@ on:
 jobs:
   run-cli-scripts:
     runs-on: ubuntu-latest
+    timeout-minutes: 15 # limit for the entire job (e.g., 15 minutes)
     strategy:
       fail-fast: false   # continue others even if one fails
       matrix:
         talktorial:
-          #- T001 excluded as it has long runtime
           - T002
           - T003 
           - T004
@@ -38,6 +38,16 @@ jobs:
           - T036
           - T037
           - T038
+
+        exclude:
+          - talktorial: T001 # long runtime.
+          - talktorial: T033 # memory overload due to DL packages.
+          - talktorial: T034 # memory overload due to DL packages.
+          - talktorial: T035 # memory overload due to DL packages.
+          - talktorial: T036 # memory overload due to DL packages.
+          - talktorial: T037 # memory overload due to DL packages.
+          - talktorial: T038 # memory overload due to DL packages.
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
