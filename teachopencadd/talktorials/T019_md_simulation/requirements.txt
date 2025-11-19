@@ -1,0 +1,8 @@
+#python=3.12.0
+mdtraj
+OpenMM
+nglview
+#ipynb pkgs
+notebook
+ipywidgets
+jupyterlab-widgets
