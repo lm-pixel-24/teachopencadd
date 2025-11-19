@@ -1,5 +1,5 @@
 #python=3.12.0
-mpl_toolkits
+mpl-tools
 nglview
 scikit-learn
 matplotlib
