@@ -73,27 +73,34 @@ If you'd like to execute the provided notebooks, we offer two possibilities:
 |    T008    | [Protein data acquisition: Protein Data Bank (PDB)][8]|
 |    T009    | [Ligand-based pharmacophores][9]|
 |    T010    | [Binding site similarity and off-target prediction][10]|
+|    T011    | [Querying online API webservices][11]|
+|    T012    | [Data acquisition from KLIFS][12]|
+|    T013    | [Data acquisition from PubChem][13]|
+|    T014    | [Binding site detection][14]|
+|    T015    | [Protein ligand docking][15]|
+|    T016    | [Protein-ligand interactions][16]|
+|    T017    | [Advanced NGLview usage][17]|
+|    T018    | [Automated pipeline for lead optimization][18]|
 
 
 [1]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T001_query_chembl/talktorial.ipynb
-
 [2]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T002_compound_adme/talktorial.ipynb
-
 [3]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T003_compound_unwanted_substructures/talktorial.ipynb
-
 [4]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T004_compound_similarity/talktorial.ipynb
-
 [5]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T005_compound_clustering/talktorial.ipynb
-
 [6]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T006_compound_maximum_common_substructures/talktorial.ipynb
-
 [7]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T007_compound_activity_machine_learning/talktorial.ipynb
-
 [8]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T008_query_pdb/talktorial.ipynb
-
 [9]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T009_compound_ensemble_pharmacophores/talktorial.ipynb
-
 [10]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T010_binding_site_comparison/talktorial.ipynb
+[11]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T011_query_online_api_webservices/talktorial.ipynb
+[12]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T012_query_klifs/talktorial.ipynb
+[13]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T013_query_pubchem/talktorial.ipynb
+[14]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T014_binding_site_detection/talktorial.ipynb
+[15]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T015_protein_ligand_docking/talktorial.ipynb
+[16]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T016_protein_ligand_interactions/talktorial.ipynb
+[17]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T017_advanced_nglview_usage/talktorial.ipynb
+[18]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T018_automated_cadd_pipeline/talktorial.ipynb
 
 ## TeachOpenCADD KNIME workflows
 
