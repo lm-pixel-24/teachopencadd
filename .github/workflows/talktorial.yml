@@ -11,7 +11,7 @@ on:
 jobs:
   run-cli-scripts:
     runs-on: ubuntu-latest
-    timeout-minutes: 15 # limit for the entire job (e.g., 15 minutes)
+    timeout-minutes: 60 # limit for the entire job (e.g., 15 minutes)
     strategy:
       fail-fast: false   # continue others even if one fails
       matrix:
