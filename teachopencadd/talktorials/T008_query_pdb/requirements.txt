@@ -18,4 +18,4 @@ biopandas
 rdkit
 biotite
 bio
-https://github.com/volkamerlab/opencadd/archive/master.tar.gz
+git+https://github.com/volkamerlab/opencadd.git@biopython_update
