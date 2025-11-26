@@ -214,6 +214,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--talktorial", "-t", help="Taltorial to run, e.g., T001", required=True
     )
-    parser.add_argument("--test", default=False, help="run pytest.")
+    parser.add_argument(
+        "--test", action="store_true", help="Test the talktorial using pytest."
+    )
     args = parser.parse_args()
     main(args.talktorial, args.test)

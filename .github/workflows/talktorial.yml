@@ -96,4 +96,4 @@ jobs:
         shell: bash -l {0}
         run: |
           echo "Running ${{ matrix.talktorial }}"
-          conda run --no-capture-output python main.py -t ${{ matrix.talktorial}} --test True
+          conda run --no-capture-output python main.py -t ${{ matrix.talktorial}} --test
