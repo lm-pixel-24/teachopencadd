@@ -75,6 +75,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Clean disk space
+        run: |
+          echo "Cleaning disk space..."
+          sudo apt-get clean
+          echo "Disk space remaining after clean:"
+          df -h
+
       - name: Install Conda
         run: |
           sudo apt-get update
