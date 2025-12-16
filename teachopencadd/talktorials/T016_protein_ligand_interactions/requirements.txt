@@ -1,20 +1,20 @@
-#python=3.12.0
-numpy
-openbabel
+#python=3.11.0
+numpy 
+#openbabel(conda install)
+#plip(conda install)
 nglview
 matplotlib
-plip
 #ipynb pkgs
 notebook
 ipywidgets
 jupyterlab-widgets
 #OpenCADD pkgs
 MDAnalysis
-pandas
+pandas 
 redo
 bravado
 biopandas
 rdkit
 biotite
 bio
-https://github.com/volkamerlab/opencadd/archive/master.tar.gz
+git+https://github.com/volkamerlab/opencadd.git@biopython_update
