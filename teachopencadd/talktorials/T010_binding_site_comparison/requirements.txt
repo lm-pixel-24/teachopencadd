@@ -1,5 +1,5 @@
 #python=3.11.0
-numpy
+numpy<2
 matplotlib
 seaborn
 nglview
@@ -17,4 +17,5 @@ biopandas
 rdkit
 biotite
 bio
-git+https://github.com/volkamerlab/opencadd.git@biopython_update
+#git+https://github.com/volkamerlab/opencadd.git@biopython_update
+git+https://github.com/gph82/opencadd.git@5f9e18f89a28c5f51218bc2a5ae92d24ff92fdfa
