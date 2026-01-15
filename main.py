@@ -42,7 +42,9 @@ def conda_env_list():
     returns:
         list: List of conda environment names.
     """
-    result = subprocess.run(["conda", "env", "list"], capture_output=True, text=True)
+    result = subprocess.run(["conda", "env", "list"], 
+                        capture_output=True, 
+                        text=True, shell=True,)
     if result.returncode != 0:
         controlled_crash("Error listing conda environments: " + result.stderr)
 
@@ -73,6 +75,7 @@ def configure_env(prefix, python_version, req_file):
             check=True,
             capture_output=True,
             text=True,
+            shell=True,
         )
         if result.returncode != 0:
             controlled_crash("Error listing conda environments: " + result.stderr)
