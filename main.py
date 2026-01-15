@@ -11,7 +11,7 @@ from pathlib import Path
 BASE_DIR = Path("teachopencadd") / "talktorials"
 REQ_FILE = "requirements.txt"
 TALKTORIAL_FILE = "talktorial.ipynb"
-USE_SHELL = 'win' in str(sys.platform.lower())
+IS_WIN = 'win32' in str(sys.platform.lower())
 
 
 def package_info(req_file):
@@ -45,7 +45,9 @@ def conda_env_list():
     """
     result = subprocess.run(["conda", "env", "list"], 
                         capture_output=True, 
-                        text=True, shell=USE_SHELL)
+                        text=True, 
+                        shell=IS_WIN,
+                        )
     if result.returncode != 0:
         controlled_crash("Error listing conda environments: " + result.stderr)
 
@@ -76,7 +78,7 @@ def configure_env(prefix, python_version, req_file):
             check=True,
             capture_output=True,
             text=True,
-            shell=USE_SHELL,
+            shell=IS_WIN,
         )
         if result.returncode != 0:
             controlled_crash("Error listing conda environments: " + result.stderr)
@@ -87,7 +89,8 @@ def configure_env(prefix, python_version, req_file):
     req_file_install_cmd = "conda run -n " + env_name + " pip install -r " + req_file
     print(f"Running command: {req_file_install_cmd}")
     result = subprocess.run(
-        req_file_install_cmd, shell=True, capture_output=True, text=True
+        req_file_install_cmd, capture_output=True, text=True,
+        shell=True, 
     )
     if result.returncode != 0:
         controlled_crash("Error installing dependencies: " + result.stderr)
@@ -102,7 +105,7 @@ def set_ipykernel(env_name):
     # install ipykernel
     result = subprocess.run(
         f"conda run -n {env_name} pip install ipykernel",
-        shell=USE_SHELL,
+        shell=True,
         capture_output=True,
         text=True,
     )
@@ -112,7 +115,7 @@ def set_ipykernel(env_name):
     result = subprocess.run(
         f"conda run -n {env_name} python -m ipykernel install --user \
             --name {env_name} --display-name '{env_name}'",
-        shell=USE_SHELL,
+        shell=True,
         capture_output=True,
         text=True,
     )
@@ -156,7 +159,8 @@ def start_talktorial(talktorial_dir: Path, env_name: str):
     if talktorial.exists():
         print(f"Starting talktorial {talktorial}")
         notebook_cmd = f"conda run -n {env_name} jupyter notebook {str(talktorial)}"
-        subprocess.run(notebook_cmd, shell=USE_SHELL)
+        subprocess.run(notebook_cmd, shell=True
+        )
     else:
         controlled_crash(f"Error: Notebook '{talktorial}' not found.")
 
@@ -168,7 +172,7 @@ def test_talktorial(talktorial_dir: Path, env_name: str):
         print(f"Testing talktorial {talktorial}")
         result = subprocess.run(
             f"conda run -n {env_name} pip install pytest nbval",
-            shell=USE_SHELL,
+            shell=True,
             capture_output=True,
             text=True,
         )
@@ -176,7 +180,8 @@ def test_talktorial(talktorial_dir: Path, env_name: str):
             controlled_crash("Error installing pytest nbval: " + result.stderr)
 
         notebook_cmd = f"conda run --no-capture-output -n {env_name} pytest --nbval-lax {str(talktorial)}"
-        result = subprocess.run(notebook_cmd, shell=USE_SHELL)
+        result = subprocess.run(notebook_cmd, shell=True
+        )
         result.check_returncode()
     else:
         controlled_crash(f"Error: Notebook '{talktorial}' not found.")
