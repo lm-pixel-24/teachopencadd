@@ -1,4 +1,4 @@
-name: Run Talktorial
+name: Talktorial CLI Cross-Platform
 
 on:
   push:
@@ -9,12 +9,14 @@ on:
       - sepenv  
 
 jobs:
-  run-cli-scripts:
-    runs-on: ubuntu-latest
+  cli-scripts:
+    name: ${{ matrix.talktorial }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 60 # limit for the entire job (e.g., 15 minutes)
     strategy:
       fail-fast: false   # continue others even if one fails
       matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
         talktorial:
           - T001 # long runtime.
           - T002
@@ -51,31 +53,21 @@ jobs:
           - T037
           - T038
 
-        #exclude:
-          #- talktorial: T008 # opencadd
-          #- talktorial: T010 # opencadd
-          #- talktorial: T011 # opencadd
-          #- talktorial: T012 # opencadd
-          #- talktorial: T014 # opencadd
-          #- talktorial: T015 # opencadd
-          #- talktorial: T016 # opencadd
-          #- talktorial: T018 # opencadd
-          #- talktorial: T023 # opencadd
-          #- talktorial: T025 # opencadd
-          #- talktorial: T026 # opencadd
-          #- talktorial: T019 # conda dependencies.
-          #- talktorial: T033 # memory overload due to DL packages.
-          #- talktorial: T034 # memory overload due to DL packages.
-          #- talktorial: T035 # memory overload due to DL packages.
-          #- talktorial: T036 # memory overload due to DL packages.
-          #- talktorial: T037 # memory overload due to DL packages.
-          #- talktorial: T038 # memory overload due to DL packages.
+        exclude:
+          - talktorial: T034 # memory overload due to DL packages.
+          - talktorial: T035 # memory overload due to DL packages.
+          - talktorial: T036 # memory overload due to DL packages.
+          - talktorial: T037 # memory overload due to DL packages.
+          - talktorial: T038 # memory overload due to DL packages.
+          #- os: windows-latest
+          #   talktorial: T018
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Clean disk space
+      - name: Clean disk space (Ubuntu only)
+        if: runner.os == 'Linux'
         run: |
           echo "Cleaning disk space..."
           sudo apt-get clean
@@ -99,8 +91,8 @@ jobs:
           conda run pip install pytest nbval
           conda list
 
-      - name: Run Talktorial ${{ matrix.talktorial}}
+      - name: Talktorial ${{ matrix.talktorial}}
         shell: bash -l {0}
         run: |
-          echo "Running ${{ matrix.talktorial }}"
+          echo "Running ${{ matrix.talktorial }} on ${{runner.os}}"
           conda run --no-capture-output python main.py -t ${{ matrix.talktorial}} --test
