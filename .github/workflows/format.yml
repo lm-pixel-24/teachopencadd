@@ -24,7 +24,12 @@ jobs:
       - name: Install format dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install "black[jupyter]"
+          # Force the upgrade to a version that supports --jupyter
+          pip install --upgrade "black[jupyter]>=24.0"
+
+      #- name: Run Black Check
+        #run: |
+        #  black --jupyter -l 99 --check teachopencadd/talktorials/
 
       - name: Run Black Check
         run: |
