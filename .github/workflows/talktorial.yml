@@ -78,8 +78,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v3 
         with:
           miniconda-version: "latest"
-          #python-version: "3.10"
-          channels: conda-forge,bioconda
+          channels: defaults, conda-forge, bioconda
           auto-activate-base: true
 
       - name: Check Python, Conda and set up environment
