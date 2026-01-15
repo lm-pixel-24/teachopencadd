@@ -87,7 +87,7 @@ def configure_env(prefix, python_version, req_file):
     req_file_install_cmd = "conda run -n " + env_name + " pip install -r " + req_file
     print(f"Running command: {req_file_install_cmd}")
     result = subprocess.run(
-        req_file_install_cmd, shell=USE_SHELL, capture_output=True, text=True
+        req_file_install_cmd, shell=True, capture_output=True, text=True
     )
     if result.returncode != 0:
         controlled_crash("Error installing dependencies: " + result.stderr)
