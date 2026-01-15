@@ -11,6 +11,7 @@ from pathlib import Path
 BASE_DIR = Path("teachopencadd") / "talktorials"
 REQ_FILE = "requirements.txt"
 TALKTORIAL_FILE = "talktorial.ipynb"
+USE_SHELL = 'win' in str(sys.platform.lower())
 
 
 def package_info(req_file):
@@ -44,7 +45,7 @@ def conda_env_list():
     """
     result = subprocess.run(["conda", "env", "list"], 
                         capture_output=True, 
-                        text=True, shell=True,)
+                        text=True, shell=USE_SHELL)
     if result.returncode != 0:
         controlled_crash("Error listing conda environments: " + result.stderr)
 
@@ -75,7 +76,7 @@ def configure_env(prefix, python_version, req_file):
             check=True,
             capture_output=True,
             text=True,
-            shell=True,
+            shell=USE_SHELL,
         )
         if result.returncode != 0:
             controlled_crash("Error listing conda environments: " + result.stderr)
@@ -101,7 +102,7 @@ def set_ipykernel(env_name):
     # install ipykernel
     result = subprocess.run(
         f"conda run -n {env_name} pip install ipykernel",
-        shell=True,
+        shell=USE_SHELL,
         capture_output=True,
         text=True,
     )
