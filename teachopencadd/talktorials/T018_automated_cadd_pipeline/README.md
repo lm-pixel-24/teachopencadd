@@ -206,3 +206,6 @@ The pipeline is **particularly suited for the hit expansion and lead optimizatio
     52. *TeachOpenCADD* talktorial on advanced NGLView usage: [Talktorial T017](https://projects.volkamerlab.org/teachopencadd/talktorials/T017_advanced_nglview_usage.html)
     
 </details>
+
+
+### Install conda packages

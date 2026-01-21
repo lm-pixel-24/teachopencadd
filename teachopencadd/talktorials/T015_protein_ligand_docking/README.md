@@ -53,3 +53,6 @@ In this talktorial, we will use molecular docking to predict the binding mode of
     - [OpenBabel](http://openbabel.org/wiki/Main_Page)
     - [Smina](https://sourceforge.net/projects/smina/)
     - [NGLView](http://nglviewer.org/nglview/latest/)
+
+
+## Install openbabel smina
