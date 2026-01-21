@@ -24,14 +24,9 @@ jobs:
       - name: Install format dependencies
         run: |
           python -m pip install --upgrade pip
-          # Force the upgrade to a version that supports --jupyter
-          pip install --upgrade "black[jupyter]>=24.0"
-
-      #- name: Run Black Check
-        #run: |
-        #  black --jupyter -l 99 --check teachopencadd/talktorials/
+          python -m pip install --upgrade "black[jupyter]"
 
       - name: Run Black Check
         run: |
-          black --jupyter -l 99 --check teachopencadd/talktorials/T*/talktorial.ipynb
+          python -m black --jupyter -l 99 --check teachopencadd/talktorials/T*/talktorial.ipynb
 
