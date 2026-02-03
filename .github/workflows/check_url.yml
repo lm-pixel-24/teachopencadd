@@ -1,0 +1,58 @@
+name: "Automated Link Checker"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * 1" # every week on Monday at midnight
+  push:
+    branches: [sepenv]
+
+jobs:
+  linkChecker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Link Checker
+        id: lychee
+        uses: lycheeverse/lychee-action@v2
+        with:
+          # --exclude-path and --exclude to filter out false positives
+          args: >
+            --verbose 
+            --no-progress 
+            --exclude "https://onlinelibrary.wiley.com/.*"
+            --exclude "https://wires.onlinelibrary.wiley.com/.*"
+            --exclude "https://chemistry-europe.onlinelibrary.wiley.com/.*"
+            --exclude "https://pubs.acs.org/.*"
+            --exclude "https://doi.org/.*"
+            --exclude "https://towardsdatascience.com/.*"
+            --exclude "https://medium.com/.*"
+            --exclude "https://*.medium.com/.*"
+            --exclude "http://localhost:.*"
+            --exclude "http://127.0.0.1:.*"
+            --exclude "https://www.icoa.fr/pkidb/index.html"
+            --exclude ".*\.mp4"
+            --exclude ".*\.pdf"
+            --exclude ".*\.png"
+            './**/*.ipynb' 
+            './**/*.py' 
+            './**/*.md'
+          fail: false 
+          output: lychee/report.md
+
+      - name: Log Results to Summary
+        run: |
+          if [ -f lychee/report.md ]; then
+            echo "## Link Check Results" >> $GITHUB_STEP_SUMMARY
+            cat lychee/report.md >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## No broken links found!" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload Report Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: broken-links-report
+          path: lychee/report.md
