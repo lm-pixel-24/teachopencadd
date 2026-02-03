@@ -28,5 +28,5 @@ jobs:
 
       - name: Run Black Check
         run: |
-          python -m black -l 99 --check teachopencadd/talktorials/T*/talktorial.ipynb
+          python -m black --ipynb -l 99 --check teachopencadd/talktorials/T*/talktorial.ipynb
 
