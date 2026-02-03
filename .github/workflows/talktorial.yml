@@ -59,8 +59,8 @@ jobs:
           - talktorial: T036 # memory overload due to DL packages.
           - talktorial: T037 # memory overload due to DL packages.
           - talktorial: T038 # memory overload due to DL packages.
-          #- os: windows-latest
-          #   talktorial: T018
+          - os: windows-latest
+            talktorial: T019 # conda pkg issue on Windows.
 
     steps:
       - name: Checkout code
