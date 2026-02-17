@@ -39,13 +39,13 @@ jobs:
             --exclude "http://127.0.0.1:.*"
             --exclude "https://fonts.googleapis.com/.*"
             --exclude "https://fonts.gstatic.com/.*"
-            --exclude ".*\.mp4"
-            --exclude ".*\.pdf"
-            --exclude ".*\.png"
             --exclude "./**/*.ipynb" 
             --exclude "./**/*.py"
             --exclude ".*\.py/.*"
             --exclude "./**/*.md"
+            ".*\.mp4"
+            ".*\.pdf"
+            ".*\.png"
           fail: false 
           output: lychee/report.md
 
