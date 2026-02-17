@@ -19,7 +19,7 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
         talktorial:
           - T001
-          - T002
+          - T002 # nbval output mismatch if ChEMBL database changes.
           - T003 
           - T004
           - T005
