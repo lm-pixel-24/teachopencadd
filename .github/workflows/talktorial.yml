@@ -18,7 +18,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         talktorial:
-          - T001 # long runtime.
+          - T001
           - T002
           - T003 
           - T004
@@ -54,11 +54,20 @@ jobs:
           - T038
 
         exclude:
+          - talktorial: T001 # long runtime and url timeout.
           - talktorial: T034 # memory overload due to DL packages.
           - talktorial: T035 # memory overload due to DL packages.
           - talktorial: T036 # memory overload due to DL packages.
           - talktorial: T037 # memory overload due to DL packages.
           - talktorial: T038 # memory overload due to DL packages.
+          - os: windows-latest
+            talktorial: T008 # OpenCADD win path
+          - os: windows-latest
+            talktorial: T010 # OpenCADD win path
+          - os: windows-latest
+            talktorial: T015 # OpenCADD win path
+          - os: windows-latest
+            talktorial: T016 # OpenCADD win path
           - os: windows-latest
             talktorial: T019 # conda pkg issue on Windows.
 
