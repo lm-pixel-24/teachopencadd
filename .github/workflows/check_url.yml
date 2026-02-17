@@ -26,7 +26,6 @@ jobs:
             --exclude "https://www.mdpi.com/.*"
             --exclude "https://go.drugbank.com/.*"
             --exclude "https://dx.doi.org/.*"
-            --exclude "https://www.eurekaselect.com/.*"
             --exclude "https://www.quora.com/.*"
             --exclude "https://www.drugs.com/.*"
             --exclude "https://rest.uniprot.org/.*"
@@ -42,10 +41,9 @@ jobs:
             --exclude ".*\.mp4"
             --exclude ".*\.pdf"
             --exclude ".*\.png"
-            --exclude "./**/*.py"
             --exclude ".*\.py/.*"
-            --exclude "./**/*.md"
-            "./**/*.ipynb" 
+            "./**/*.md"
+            "./**/*.ipynb"
             
           fail: false 
           output: lychee/report.md
