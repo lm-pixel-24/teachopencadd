@@ -7,6 +7,8 @@ seaborn
 numpy<2
 pandas
 matplotlib
+#ipynb pkgs
 notebook
+nbformat
 ipywidgets
 jupyterlab-widgets

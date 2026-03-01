@@ -1,5 +1,9 @@
 #python=3.12.0
-notebook
 rdkit
 pandas
 matplotlib
+#ipynb pkgs
+notebook
+nbformat
+ipywidgets
+jupyterlab-widgets

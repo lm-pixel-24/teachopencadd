@@ -7,5 +7,6 @@ bravado
 beautifulsoup4
 #ipynb pkgs
 notebook
+nbformat
 ipywidgets
 jupyterlab-widgets

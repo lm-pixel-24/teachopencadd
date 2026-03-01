@@ -4,5 +4,9 @@ numpy
 tqdm
 rdkit
 chembl-webresource-client
-notebook
 matplotlib
+#ipynb pkgs
+notebook
+nbformat
+ipywidgets
+jupyterlab-widgets

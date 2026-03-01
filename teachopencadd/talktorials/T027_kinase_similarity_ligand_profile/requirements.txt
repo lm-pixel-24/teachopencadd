@@ -6,5 +6,6 @@ matplotlib
 rdkit
 #ipynb pkgs
 notebook
+nbformat
 ipywidgets
 jupyterlab-widgets

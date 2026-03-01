@@ -3,6 +3,7 @@ numpy
 nglview
 #ipynb pkgs
 notebook
+nbformat
 ipywidgets
 jupyterlab-widgets
 #OpenCADD pkgs

@@ -7,6 +7,7 @@ pypdb
 requests_cache
 #ipynb pkgs
 notebook
+nbformat
 ipywidgets
 jupyterlab-widgets
 #OpenCADD pkgs

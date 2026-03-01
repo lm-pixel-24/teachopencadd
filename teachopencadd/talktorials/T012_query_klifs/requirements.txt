@@ -4,6 +4,7 @@ nglview
 matplotlib
 #ipynb pkgs
 notebook
+nbformat
 ipywidgets
 jupyterlab-widgets
 #OpenCADD pkgs

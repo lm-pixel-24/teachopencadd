@@ -5,6 +5,7 @@ nglview
 pypdb
 #ipynb pkgs
 notebook
+nbformat
 ipywidgets
 jupyterlab-widgets
 #OpenCADD pkgs

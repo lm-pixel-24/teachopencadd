@@ -5,6 +5,8 @@ numpy<2
 matplotlib
 tqdm
 pandas
+#ipynb pkgs
 notebook
+nbformat
 ipywidgets
 jupyterlab-widgets

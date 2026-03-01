@@ -6,5 +6,6 @@ matplotlib
 scipy
 #ipynb pkgs
 notebook
+nbformat
 ipywidgets
 jupyterlab-widgets

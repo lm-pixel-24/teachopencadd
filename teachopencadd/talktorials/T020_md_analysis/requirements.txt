@@ -6,5 +6,6 @@ nglview
 MDAnalysis
 #ipynb pkgs
 notebook
+nbformat
 ipywidgets
 jupyterlab-widgets
