@@ -47,6 +47,7 @@ jobs:
             --exclude ".*\.pdf"
             --exclude ".*\.png"
             --exclude ".*\.py/.*"
+            --exclude ".*\/n$"
             --exclude "./**/*.md"
             "./**/*.ipynb"
             
