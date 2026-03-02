@@ -58,7 +58,7 @@ We discuss the main steps for binding site comparison and implement a basic meth
   * Promiscuity of imatinib: 
 [<i>J. Biol.</i> (2009), <b>8</b>, 30](https://jbiol.biomedcentral.com/articles/10.1186/jbiol134)
   * [ChEMBL information on Imatinib](https://www.ebi.ac.uk/chembl/compound/inspect/CHEMBL941)
-  * [PDB information on Imatinib](https://www3.rcsb.org/ligand/STI)
+  * [PDB information on Imatinib](https://www.rcsb.org/ligand/STI)
   * Side effects of Imatinib
     * [MedFacts Consumer Drug Information](https://www.drugs.com/cdi/imatinib.html)
     * [DrugBank](https://go.drugbank.com/drugs/DB00619)
