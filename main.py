@@ -55,7 +55,7 @@ def conda_env_list():
     return [line.split()[0] for line in envs if line and not line.startswith("#")]
 
 
-def configure_env(prefix, python_version, req_file):
+def configure_env(prefix, python_version, req_file, verbose=False):
     """
     Configure a conda environment with the specified
     python version and requirements.
@@ -89,7 +89,7 @@ def configure_env(prefix, python_version, req_file):
     req_file_install_cmd = "conda run -n " + env_name + " pip install -r " + req_file
     print(f"Running command: {req_file_install_cmd}")
     result = subprocess.run(
-        req_file_install_cmd, capture_output=True, text=True,
+        req_file_install_cmd, capture_output=verbose, text=verbose,
         shell=True, 
     )
     if result.returncode != 0:
@@ -207,7 +207,7 @@ def main(txxx, test_mode=False):
     print(f"Python version: {python_version}")
     print(f"Package list: \n{pkg_list}")
 
-    env_name = configure_env(txxx, python_version, req_path)
+    env_name = configure_env(txxx, python_version, req_path, verbose=test_mode)
     print(f"Configured environment: {env_name}")
     set_ipykernel(env_name)
     set_nb_kernelspec(talktorial_dir, env_name)
