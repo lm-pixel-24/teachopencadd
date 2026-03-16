@@ -76,8 +76,8 @@ def configure_env(prefix, python_version, req_file, verbose=False):
         result = subprocess.run(
             ["conda", "create", "-n", env_name, f"python={python_version}", "--yes"],
             check=True,
-            capture_output=True,
-            text=True,
+            capture_output=verbose,
+            text=verbose,
             shell=IS_WIN,
         )
         if result.returncode != 0:
