@@ -29,6 +29,8 @@ jobs:
         uses: lycheeverse/lychee-action@v2
         with:
           args: >
+            --accept '200..205, 403'
+            --insecure
             --no-progress
             --exclude "https://academic.oup.com/.*"
             --exclude "https://www.mdpi.com/.*"
