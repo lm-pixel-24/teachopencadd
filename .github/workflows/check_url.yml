@@ -14,14 +14,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Convert notebooks to Markdown
+        run: |
+          pip install nbconvert
+          jupyter-nbconvert --to markdown teachopencadd/talktorials/**/talktorial.ipynb
+
       - name: Link Checker
         id: lychee
         uses: lycheeverse/lychee-action@v2
         with:
-          # --exclude-path and --exclude to filter out false positives
           args: >
-            --verbose 
-            --no-progress 
+            --no-progress
             --exclude "https://academic.oup.com/.*"
             --exclude "https://www.mdpi.com/.*"
             --exclude "https://go.drugbank.com/.*"
@@ -32,24 +40,23 @@ jobs:
             --exclude "https://onlinelibrary.wiley.com/.*"
             --exclude "https://pubs.acs.org/.*"
             --exclude "https://doi.org/.*"
-            --exclude ".*\{.*\}.*"
-            --exclude ".*%.*"
             --exclude "http://localhost:.*"
             --exclude "http://127.0.0.1:.*"
             --exclude "https://fonts.googleapis.com/.*"
             --exclude "https://fonts.gstatic.com/.*"
-            --exclude " https://www.eurekaselect.com/.*"
+            --exclude "https://www.eurekaselect.com/.*"
             --exclude "https://numpydoc.readthedocs.io/.*"
             --exclude "https://ipywidgets.readthedocs.io/.*"
-            --exclude " https://towardsdatascience.com/.*"
-            --exclude " https://medium.com/.*"
+            --exclude "https://towardsdatascience.com/.*"
+            --exclude "https://medium.com/.*"
             --exclude ".*\.mp4"
             --exclude ".*\.pdf"
             --exclude ".*\.png"
-            --exclude ".*\.py/.*"
-            --exclude ".*\/n$"
+            --exclude ".*\.jpg"
+            --exclude ".*\.py"
             --exclude "./**/*.md"
-            "./**/*.ipynb"
+            --exclude "local://.*"
+            "./teachopencadd/talktorials/**/talktorial.md"
             
           fail: true 
           output: lychee/report.md
