@@ -85,6 +85,8 @@ jobs:
         uses: mamba-org/setup-micromamba@v1
         with:
           environment-name: teachopencadd-env
+          create-args: >-
+            python=3.11
           cache-environment: true
           cache-downloads: true
 

@@ -14,36 +14,6 @@ TALKTORIAL_FILE = "talktorial.ipynb"
 IS_WIN = "win32" in str(sys.platform.lower())
 
 
-def get_python_path(env_name):
-    """
-    Returns the absolute path to the python executable for a given conda env
-    by asking the environment itself.
-    """
-    try:
-        # We use conda run to get the actual path of the python interpreter
-        # This is more robust than guessing based on the base directory.
-        result = subprocess.run(
-            [
-                "conda",
-                "run",
-                "-n",
-                env_name,
-                "python",
-                "-c",
-                "import sys; print(sys.executable)",
-            ],
-            capture_output=True,
-            text=True,
-            check=True,
-            shell=IS_WIN,
-        )
-        return Path(result.stdout.strip())
-    except subprocess.CalledProcessError:
-        controlled_crash(
-            f"Could not determine python path for environment '{env_name}'."
-        )
-
-
 def package_info(req_file):
     """
     Parses requirements. Separates conda-specific packages.
@@ -72,43 +42,54 @@ def package_info(req_file):
     return py_vrs, conda_pkgs, pip_pkgs
 
 
-def configure_env(prefix, python_version, req_file, verbose=False):
-    env_name = f"{prefix}_{python_version.replace('.', '')}"
-    existing_envs = conda_env_list()
-
-    # 1. Create Base Env
-    if env_name not in existing_envs:
-        print(f"Creating conda environment '{env_name}'...")
-        subprocess.run(
-            ["conda", "create", "-n", env_name, f"python={python_version}", "--yes"],
+def get_python_path(env_name):
+    """
+    Ask Conda exactly where the python executable is for the new env.
+    This works regardless of OS or where Conda is installed.
+    """
+    try:
+        cmd = "where python" if IS_WIN else "which python"
+        result = subprocess.run(
+            ["conda", "run", "-n", env_name, *cmd.split()],
+            capture_output=True,
+            text=True,
             check=True,
             shell=IS_WIN,
         )
+        return Path(result.stdout.strip().splitlines()[0])
+    except subprocess.CalledProcessError:
+        controlled_crash(f"Conda created '{env_name}' but it has no python binary.")
+
+
+def configure_env(prefix, python_version, req_file, verbose=False):
+    env_name = f"{prefix}_{python_version.replace('.', '')}"
+
+    print(f"Creating environment '{env_name}' with Python {python_version}...")
+    subprocess.run(
+        ["conda", "create", "-n", env_name, f"python={python_version}", "--yes"],
+        check=True,
+        shell=IS_WIN,
+    )
 
     py_vrs, conda_pkgs, pip_pkgs = package_info(req_file)
-    python_exe = str(get_python_path(env_name))
 
-    # 2. Install Conda-only packages
+    python_exe = str(get_python_path(env_name))
+    print(f"Found dynamic python at: {python_exe}")
+
     if conda_pkgs:
-        print(f"Installing Conda-only packages: {conda_pkgs}")
         subprocess.run(
             ["conda", "install", "-n", env_name, *conda_pkgs, "--yes"],
             check=True,
             shell=IS_WIN,
         )
 
-    # 3. Install the rest with UV (Lightning fast)
-    use_uv = shutil.which("uv") is not None
-    installer = ["uv", "pip"] if use_uv else [python_exe, "-m", "pip"]
-
     if pip_pkgs:
-        print(f"Installing Pip packages via {'uv' if use_uv else 'pip'}...")
-        cmd = (
-            [*installer, "install", "--python", python_exe]
-            if use_uv
-            else [*installer, "install"]
+        print(f"Using uv to install dependencies into {env_name}...")
+        subprocess.run(
+            ["uv", "pip", "install", "--python", python_exe, *pip_pkgs],
+            check=True,
+            shell=IS_WIN,
         )
-        subprocess.run([*cmd, *pip_pkgs], check=True, shell=IS_WIN)
 
     return env_name
 
@@ -118,7 +99,6 @@ def set_ipykernel(env_name):
     python_exe = str(get_python_path(env_name))
     use_uv = shutil.which("uv") is not None
 
-    # Install ipykernel using uv if available
     install_cmd = (
         ["uv", "pip", "install", "--python", python_exe, "ipykernel"]
         if use_uv
@@ -127,7 +107,6 @@ def set_ipykernel(env_name):
 
     subprocess.run(install_cmd, check=True, shell=IS_WIN)
 
-    # Register kernel
     subprocess.run(
         [
             python_exe,
@@ -152,7 +131,6 @@ def test_talktorial(talktorial_dir: Path, env_name: str):
         python_exe = str(get_python_path(env_name))
         use_uv = shutil.which("uv") is not None
 
-        # Fast install test deps
         install_cmd = (
             ["uv", "pip", "install", "--python", python_exe, "pytest", "nbval"]
             if use_uv
@@ -160,7 +138,6 @@ def test_talktorial(talktorial_dir: Path, env_name: str):
         )
         subprocess.run(install_cmd, check=True, shell=IS_WIN)
 
-        # Run test using the env's python to ensure context
         subprocess.run(
             [python_exe, "-m", "pytest", "--nbval-lax", str(talktorial)],
             check=True,
