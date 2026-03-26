@@ -3,25 +3,24 @@ name: Talktorial CLI Cross-Platform
 on:
   push:
     branches:
-      - sepenv
+      - sepenv     
   pull_request:
     branches:
-      - sepenv
+      - sepenv  
 
 jobs:
   cli-scripts:
     name: ${{ matrix.talktorial }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 60
-
+    timeout-minutes: 60 # limit for the entire job (e.g., 15 minutes)
     strategy:
-      fail-fast: false
+      fail-fast: false   # continue others even if one fails
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         talktorial:
           - T001
-          - T002
-          - T003
+          - T002 # nbval output mismatch if ChEMBL database changes.
+          - T003 
           - T004
           - T005
           - T006
@@ -55,65 +54,52 @@ jobs:
           - T038
 
         exclude:
-          - talktorial: T001
-          - talktorial: T034
-          - talktorial: T035
-          - talktorial: T036
-          - talktorial: T037
-          - talktorial: T038
+          - talktorial: T001 # long runtime and url timeout.
+          - talktorial: T034 # memory overload due to DL packages.
+          - talktorial: T035 # memory overload due to DL packages.
+          - talktorial: T036 # memory overload due to DL packages.
+          - talktorial: T037 # memory overload due to DL packages.
+          - talktorial: T038 # memory overload due to DL packages.
           - os: windows-latest
-            talktorial: T008
+            talktorial: T008 # OpenCADD win path
           - os: windows-latest
-            talktorial: T010
+            talktorial: T010 # OpenCADD win path
           - os: windows-latest
-            talktorial: T015
+            talktorial: T015 # OpenCADD win path
           - os: windows-latest
-            talktorial: T016
+            talktorial: T016 # OpenCADD win path
           - os: windows-latest
-            talktorial: T019
+            talktorial: T019 # conda pkg issue on Windows.
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Clean disk space (Ubuntu only)
         if: runner.os == 'Linux'
         run: |
+          echo "Cleaning disk space..."
           sudo apt-get clean
+          echo "Disk space remaining after clean:"
           df -h
 
-      - name: Cache Conda packages
-        uses: actions/cache@v4
+      - name: Setup Conda
+        uses: conda-incubator/setup-miniconda@v3 
         with:
-          path: ~/conda_pkgs_dir
-          key: ${{ runner.os }}-conda-${{ hashFiles('pyproject.toml', 'setup.py') }}
-          restore-keys: |
-            ${{ runner.os }}-conda-
+          miniconda-version: "latest"
+          channels: defaults, conda-forge, bioconda
+          auto-activate-base: true
 
-      - name: Install Miniconda
-        uses: conda-incubator/setup-miniconda@v3
-        with:
-          miniconda-version: latest
-          auto-activate-base: false
-          channels: defaults, conda-forge
-          python-version: "3.11"
-          use-only-tar-bz2: true
-          pkgs-dirs: ~/conda_pkgs_dir
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          enable-cache: true
-          cache-dependency-glob: "**/pyproject.toml"
-
-      - name: Sync uv environment
-        run: uv sync --extra test
-
-      - name: Install dependencies
+      - name: Check Python, Conda and set up environment
+        shell: bash -l {0}
         run: |
-          uv pip install -e ".[test]"
+          which python
+          python --version
+          conda run pip install pytest nbval
+          conda list
 
-      - name: Run talktorial
+      - name: Talktorial ${{ matrix.talktorial}}
+        shell: bash -l {0}
         run: |
-          echo "Running ${{ matrix.talktorial }} on ${{ runner.os }}"
-          uv run teachopencadd -t ${{ matrix.talktorial }} --test
+          echo "Running ${{ matrix.talktorial }} on ${{runner.os}}"
+          conda run --no-capture-output python main.py -t ${{ matrix.talktorial}} --test
