@@ -104,4 +104,4 @@ jobs:
         shell: bash -l {0}
         run: |
           echo "Running ${{ matrix.talktorial }}"
-          uv run teachopencadd -t ${{ matrix.talktorial }} --test
+          teachopencadd -t ${{ matrix.talktorial }} --test
