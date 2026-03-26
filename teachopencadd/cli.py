@@ -66,7 +66,16 @@ def configure_env(prefix, python_version, req_file, verbose=False):
 
     print(f"Creating environment '{env_name}' with Python {python_version}...")
     subprocess.run(
-        ["conda", "create", "-n", env_name, f"python={python_version}", "--yes"],
+        [
+            "conda",
+            "create",
+            "-n",
+            env_name,
+            f"python={python_version}",
+            "-c",
+            "conda-forge",
+            "--yes",
+        ],
         check=True,
         shell=IS_WIN,
     )
@@ -78,7 +87,16 @@ def configure_env(prefix, python_version, req_file, verbose=False):
 
     if conda_pkgs:
         subprocess.run(
-            ["conda", "install", "-n", env_name, *conda_pkgs, "--yes"],
+            [
+                "conda",
+                "install",
+                "-n",
+                env_name,
+                "-c",
+                "conda-forge",
+                *conda_pkgs,
+                "--yes",
+            ],
             check=True,
             shell=IS_WIN,
         )
