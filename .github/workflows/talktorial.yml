@@ -86,11 +86,11 @@ jobs:
         uses: astral-sh/setup-uv@v1
 
       - name: Sync uv environment
-        run: uv sync  --extras test
+        run: uv sync  --extra=test
 
       - name: Install dependencies
         run: |
-          uv pip install -e .[test]
+          uv pip install -e ".[test]"
 
       - name: Run talktorial
         run: |
