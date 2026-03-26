@@ -16,40 +16,40 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         talktorial:
-          # - T001
-          # - T002 # nbval output mismatch if ChEMBL database changes.
-          # - T003 
-          # - T004
-          # - T005
-          # - T006
-          # - T007
-          # - T008
-          # - T009
-          # - T010
-          # - T011
-          # - T012
-          # - T013
-          # - T014
-          # - T015
+          - T001
+          - T002 # nbval output mismatch if ChEMBL database changes.
+          - T003 
+          - T004
+          - T005
+          - T006
+          - T007
+          - T008
+          - T009
+          - T010
+          - T011
+          - T012
+          - T013
+          - T014
+          - T015
           - T016
-          # - T017
-          # - T018
-          # - T019
-          # - T020
-          # - T021
-          # - T022
-          # - T023
-          # - T024
-          # - T025
-          # - T026
-          # - T027
-          # - T028
-          # - T033
-          # - T034
-          # - T035
-          # - T036
-          # - T037
-          # - T038
+          - T017
+          - T018
+          - T019
+          - T020
+          - T021
+          - T022
+          - T023
+          - T024
+          - T025
+          - T026
+          - T027
+          - T028
+          - T033
+          - T034
+          - T035
+          - T036
+          - T037
+          - T038
 
         exclude:
           - talktorial: T001 # long runtime and url timeout.
@@ -82,18 +82,19 @@ jobs:
           df -h
 
       - name: Setup Micromamba
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@v2
         with:
           environment-name: teachopencadd-env
           create-args: >-
             python=3.11
-          cache-environment: true
           cache-downloads: true
+          cache-environment: true
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
+          cache-dependency-glob: "**/requirements.txt"
 
       - name: Install Python dependencies with uv
         shell: bash -l {0}
