@@ -1,7 +1,5 @@
 #python=3.10.0
 numpy 
-#openbabel(conda install)
-#plip(conda install)
 nglview
 pypdb
 matplotlib
@@ -20,3 +18,5 @@ rdkit
 biotite
 bio
 git+https://github.com/volkamerlab/opencadd.git@biopython_update
+openbabel # conda
+plip # conda

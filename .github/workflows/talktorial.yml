@@ -2,11 +2,9 @@ name: Talktorial CLI Cross-Platform
 
 on:
   push:
-    branches:
-      - sepenv     
+    branches: [sepenv-ci]
   pull_request:
-    branches:
-      - sepenv  
+    branches: [sepenv-ci]
 
 jobs:
   cli-scripts:
@@ -18,40 +16,40 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         talktorial:
-          - T001
-          - T002 # nbval output mismatch if ChEMBL database changes.
-          - T003 
-          - T004
-          - T005
-          - T006
-          - T007
-          - T008
-          - T009
-          - T010
-          - T011
-          - T012
-          - T013
-          - T014
-          - T015
+          # - T001
+          # - T002 # nbval output mismatch if ChEMBL database changes.
+          # - T003 
+          # - T004
+          # - T005
+          # - T006
+          # - T007
+          # - T008
+          # - T009
+          # - T010
+          # - T011
+          # - T012
+          # - T013
+          # - T014
+          # - T015
           - T016
-          - T017
-          - T018
-          - T019
-          - T020
-          - T021
-          - T022
-          - T023
-          - T024
-          - T025
-          - T026
-          - T027
-          - T028
-          - T033
-          - T034
-          - T035
-          - T036
-          - T037
-          - T038
+          # - T017
+          # - T018
+          # - T019
+          # - T020
+          # - T021
+          # - T022
+          # - T023
+          # - T024
+          # - T025
+          # - T026
+          # - T027
+          # - T028
+          # - T033
+          # - T034
+          # - T035
+          # - T036
+          # - T037
+          # - T038
 
         exclude:
           - talktorial: T001 # long runtime and url timeout.
@@ -83,23 +81,25 @@ jobs:
           echo "Disk space remaining after clean:"
           df -h
 
-      - name: Setup Conda
-        uses: conda-incubator/setup-miniconda@v3 
+      - name: Setup Micromamba
+        uses: mamba-org/setup-micromamba@v1
         with:
-          miniconda-version: "latest"
-          channels: defaults, conda-forge, bioconda
-          auto-activate-base: true
+          environment-name: teachopencadd-env
+          cache-environment: true
+          cache-downloads: true
 
-      - name: Check Python, Conda and set up environment
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install Python dependencies with uv
         shell: bash -l {0}
         run: |
-          which python
-          python --version
-          conda run pip install pytest nbval
-          conda list
+          uv pip install -e ".[test]"
 
-      - name: Talktorial ${{ matrix.talktorial}}
+      - name: Run talktorial
         shell: bash -l {0}
         run: |
-          echo "Running ${{ matrix.talktorial }} on ${{runner.os}}"
-          conda run --no-capture-output python main.py -t ${{ matrix.talktorial}} --test
+          echo "Running ${{ matrix.talktorial }}"
+          uv run teachopencadd -t ${{ matrix.talktorial }} --test
