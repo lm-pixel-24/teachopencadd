@@ -49,8 +49,9 @@ def get_python_path(env_name):
     """
     try:
         cmd = "where python" if IS_WIN else "which python"
+        conda_bin = get_conda_executable()
         result = subprocess.run(
-            ["conda", "run", "-n", env_name, *cmd.split()],
+            [conda_bin, "run", "-n", env_name, *cmd.split()],
             capture_output=True,
             text=True,
             check=True,
@@ -63,11 +64,14 @@ def get_python_path(env_name):
 
 def configure_env(prefix, python_version, req_file, verbose=False):
     env_name = f"{prefix}_{python_version.replace('.', '')}"
+    conda_bin = get_conda_executable()
 
-    print(f"Creating environment '{env_name}' with Python {python_version}...")
+    print(
+        f"Creating environment '{env_name}' using {conda_bin} with Python {python_version}..."
+    )
     subprocess.run(
         [
-            "conda",
+            conda_bin,
             "create",
             "-n",
             env_name,
@@ -88,7 +92,7 @@ def configure_env(prefix, python_version, req_file, verbose=False):
     if conda_pkgs:
         subprocess.run(
             [
-                "conda",
+                conda_bin,
                 "install",
                 "-n",
                 env_name,
@@ -163,14 +167,38 @@ def test_talktorial(talktorial_dir: Path, env_name: str):
         )
 
 
+def get_conda_executable():
+    """Finds the actual path to conda or micromamba."""
+    mamba = shutil.which("micromamba")
+    if mamba:
+        return mamba
+
+    conda = shutil.which("conda")
+    if conda:
+        return conda
+
+    possible_paths = [
+        "/usr/local/bin/micromamba",
+        "/Users/runner/micromamba/bin/micromamba",
+        "/home/runner/micromamba/bin/micromamba",
+        "C:\\Scripts\\micromamba.exe",
+    ]
+    for p in possible_paths:
+        if os.path.exists(p):
+            return p
+
+    controlled_crash("Could not find 'conda' or 'micromamba' executable in PATH.")
+
+
 def conda_env_list():
     """
     List all conda environments.
     returns:
         list: List of conda environment names.
     """
+    conda_bin = get_conda_executable()
     result = subprocess.run(
-        ["conda", "env", "list"],
+        [conda_bin, "env", "list"],
         capture_output=True,
         text=True,
         shell=IS_WIN,
