@@ -191,7 +191,7 @@ def controlled_crash(reason, code=1):
     sys.exit(code)
 
 
-def main(txxx, test_mode=False):
+def run(txxx, test_mode=False):
     talktorial_dir = find_talktorial_folder(txxx)
     print(f"Found talktorial folder: \n{talktorial_dir}")
     req_path = talktorial_dir / REQ_FILE
@@ -214,9 +214,12 @@ def main(txxx, test_mode=False):
         start_talktorial(talktorial_dir, env_name)
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description="CLI.")
     parser.add_argument("--talktorial", "-t", help="Taltorial to run, e.g., T001", required=True)
     parser.add_argument("--test", action="store_true", help="Test the talktorial using pytest.")
     args = parser.parse_args()
-    main(args.talktorial, args.test)
+    run(args.talktorial, args.test)
+
+if __name__ == '__main__':
+    main()
