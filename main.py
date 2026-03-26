@@ -7,11 +7,10 @@ import nbformat
 import subprocess
 from pathlib import Path
 
-
 BASE_DIR = Path("teachopencadd") / "talktorials"
 REQ_FILE = "requirements.txt"
 TALKTORIAL_FILE = "talktorial.ipynb"
-IS_WIN = 'win32' in str(sys.platform.lower())
+IS_WIN = "win32" in str(sys.platform.lower())
 
 
 def package_info(req_file):
@@ -43,11 +42,12 @@ def conda_env_list():
     returns:
         list: List of conda environment names.
     """
-    result = subprocess.run(["conda", "env", "list"], 
-                        capture_output=True, 
-                        text=True, 
-                        shell=IS_WIN,
-                        )
+    result = subprocess.run(
+        ["conda", "env", "list"],
+        capture_output=True,
+        text=True,
+        shell=IS_WIN,
+    )
     if result.returncode != 0:
         controlled_crash("Error listing conda environments: " + result.stderr)
 
@@ -69,10 +69,8 @@ def configure_env(prefix, python_version, req_file, verbose=False):
     env_name = prefix + "_" + python_version.replace(".", "")
     existing_envs = conda_env_list()
     if not env_name in existing_envs:
-        print(
-            f"Creating conda environment '{env_name}'\
-                 with Python {python_version}"
-        )
+        print(f"Creating conda environment '{env_name}'\
+                 with Python {python_version}")
         result = subprocess.run(
             ["conda", "create", "-n", env_name, f"python={python_version}", "--yes"],
             check=True,
@@ -89,8 +87,10 @@ def configure_env(prefix, python_version, req_file, verbose=False):
     req_file_install_cmd = "conda run -n " + env_name + " pip install -r " + req_file
     print(f"Running command: {req_file_install_cmd}")
     result = subprocess.run(
-        req_file_install_cmd, capture_output=verbose, text=verbose,
-        shell=True, 
+        req_file_install_cmd,
+        capture_output=verbose,
+        text=verbose,
+        shell=True,
     )
     if result.returncode != 0:
         controlled_crash("Error installing dependencies: " + result.stderr)
@@ -146,10 +146,8 @@ def find_talktorial_folder(txxx):
     search_pattern = BASE_DIR / f"{txxx}_*"
     matches = glob.glob(str(search_pattern))
     if not matches:
-        controlled_crash(
-            f"No folder found for '{txxx}_*' \
-                        in '{BASE_DIR}'."
-        )
+        controlled_crash(f"No folder found for '{txxx}_*' \
+                        in '{BASE_DIR}'.")
     return Path(matches[0])
 
 
@@ -159,8 +157,7 @@ def start_talktorial(talktorial_dir: Path, env_name: str):
     if talktorial.exists():
         print(f"Starting talktorial {talktorial}")
         notebook_cmd = f"conda run -n {env_name} jupyter notebook {str(talktorial)}"
-        subprocess.run(notebook_cmd, shell=True
-        )
+        subprocess.run(notebook_cmd, shell=True)
     else:
         controlled_crash(f"Error: Notebook '{talktorial}' not found.")
 
@@ -179,9 +176,10 @@ def test_talktorial(talktorial_dir: Path, env_name: str):
         if result.returncode != 0:
             controlled_crash("Error installing pytest nbval: " + result.stderr)
 
-        notebook_cmd = f"conda run --no-capture-output -n {env_name} pytest --nbval-lax {str(talktorial)}"
-        result = subprocess.run(notebook_cmd, shell=True
+        notebook_cmd = (
+            f"conda run --no-capture-output -n {env_name} pytest --nbval-lax {str(talktorial)}"
         )
+        result = subprocess.run(notebook_cmd, shell=True)
         result.check_returncode()
     else:
         controlled_crash(f"Error: Notebook '{talktorial}' not found.")
@@ -199,10 +197,8 @@ def main(txxx, test_mode=False):
     req_path = talktorial_dir / REQ_FILE
     req_path = str(req_path)  # convert posixpath to str
     if not os.path.exists(req_path):
-        controlled_crash(
-            f"Requirements file '{REQ_FILE}' \
-                            not found in {talktorial_dir}."
-        )
+        controlled_crash(f"Requirements file '{REQ_FILE}' \
+                            not found in {talktorial_dir}.")
     python_version, pkg_list = package_info(req_path)
     print(f"Python version: {python_version}")
     print(f"Package list: \n{pkg_list}")
@@ -220,11 +216,7 @@ def main(txxx, test_mode=False):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="CLI.")
-    parser.add_argument(
-        "--talktorial", "-t", help="Taltorial to run, e.g., T001", required=True
-    )
-    parser.add_argument(
-        "--test", action="store_true", help="Test the talktorial using pytest."
-    )
+    parser.add_argument("--talktorial", "-t", help="Taltorial to run, e.g., T001", required=True)
+    parser.add_argument("--test", action="store_true", help="Test the talktorial using pytest.")
     args = parser.parse_args()
     main(args.talktorial, args.test)

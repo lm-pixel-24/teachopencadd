@@ -13,6 +13,7 @@ API_BASE = f"https://api.github.com/repos/{OWNER}/{REPO}/contents/{API_ROOT_PATH
 RAW_BASE = f"https://raw.githubusercontent.com/{OWNER}/{REPO}"  # raw base -> /{branch}/{path}
 OUTPUT_DIR = f"./"
 
+
 def github_get(api_url, params=None, timeout=15):
     """Perform an unauthenticated GET to the GitHub API. Raises on non-200."""
     headers = {"Accept": "application/vnd.github.v3+json", "User-Agent": "download-script"}
@@ -21,7 +22,9 @@ def github_get(api_url, params=None, timeout=15):
     except requests.RequestException as e:
         raise SystemExit(f"Network error while accessing {api_url}: {e}")
     if r.status_code == 403 and "rate limit" in r.text.lower():
-        raise SystemExit(f"GitHub API rate limit reached (HTTP 403). Try again later or use an authenticated token.")
+        raise SystemExit(
+            f"GitHub API rate limit reached (HTTP 403). Try again later or use an authenticated token."
+        )
     if r.status_code != 200:
         raise SystemExit(f"GitHub API error {r.status_code} for {api_url}: {r.text}")
     return r.json()
@@ -73,7 +76,7 @@ def download_file(raw_url, local_path, timeout=30):
 
 
 def main(talktorial, branch, output_dir):
-    api_root_with_path = API_BASE + talktorial 
+    api_root_with_path = API_BASE + talktorial
     os.makedirs(output_dir, exist_ok=True)
 
     print(f"Fetching file list from branch '{branch}' ...")
@@ -81,7 +84,7 @@ def main(talktorial, branch, output_dir):
     print(f"Found {len(all_files)} files to download (excluded: {EXCLUDE_FILES})\n")
 
     for path, raw_url in all_files:
-        rel_local = os.path.relpath(path, API_ROOT_PATH+talktorial)
+        rel_local = os.path.relpath(path, API_ROOT_PATH + talktorial)
         local_path = os.path.join(output_dir, rel_local)
         if os.path.exists(local_path):
             try:
@@ -100,9 +103,18 @@ def main(talktorial, branch, output_dir):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Download TeachOpenCADD talktorials from a specific branch.")
-    parser.add_argument("--talktorial", "-t", help="Taltorial to download, e.g., T001_query_chembl", required=True)
-    parser.add_argument("--branch", "-b", default=DEFAULT_BRANCH, help="Git branch to download from (default: sepenv).")
+    parser = argparse.ArgumentParser(
+        description="Download TeachOpenCADD talktorials from a specific branch."
+    )
+    parser.add_argument(
+        "--talktorial", "-t", help="Taltorial to download, e.g., T001_query_chembl", required=True
+    )
+    parser.add_argument(
+        "--branch",
+        "-b",
+        default=DEFAULT_BRANCH,
+        help="Git branch to download from (default: sepenv).",
+    )
     parser.add_argument("--output_dir", "-o", default=OUTPUT_DIR, help="download location.")
     args = parser.parse_args()
 
