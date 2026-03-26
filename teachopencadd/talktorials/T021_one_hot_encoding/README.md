@@ -58,7 +58,7 @@ The aim of the talktorial is to perform one-hot encoding of SMILES structures on
      - Allen Chieng Hoon Choong, Nung Kion Lee, "*Evaluation of Convolutionary Neural Networks Modeling of DNA Sequences using Ordinal versus one-hot Encoding Method*", [bioRxiv, October 25, 2017](https://doi.org/10.1101/186965).
      - Patricio Cerda, Gael Varoquaux, "*Encoding high-cardinality string categorical variables*", [arXiv:1907, 18 May 2020](https://arxiv.org/pdf/1907.01860v5.pdf).
      - Blogpost: Jason Brownlee, *How to One Hot Encode Sequence Data in Python*, [Machine Learning Mastery, accessed November 9th, 2020](https://machinelearningmastery.com/how-to-one-hot-encode-sequence-data-in-python/).
-     - Blogpost: Krishna Kumar Mahto, *One-Hot-Encoding, Multicollinearity and the Dummy Variable Trap*, towardsdatascience, Available from [one-hot-encoding-multicollinearity](https://towardsdatascience.com/one-hot-encoding-multicollinearity-and-the-dummy-variable-trap-b5840be3c41a/), accessed July 8th, 2019.
+     - Blogpost: Krishna Kumar Mahto, *One-Hot-Encoding, Multicollinearity and the Dummy Variable Trap*, medium, Available at [one-hot-encoding-multicollinearity](https://medium.com/data-science/one-hot-encoding-multicollinearity-and-the-dummy-variable-trap-b5840be3c41a), accessed March 25th, 2026.
      - Blogpost: Chris, *What is padding in a neural network?*, archieved from MachineCurve, [Padding](https://github.com/christianversloot/machine-learning-articles/blob/main/what-is-padding-in-a-neural-network.md)
      
 
