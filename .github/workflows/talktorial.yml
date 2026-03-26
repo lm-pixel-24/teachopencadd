@@ -82,6 +82,14 @@ jobs:
           sudo apt-get clean
           df -h
 
+      - name: Install Miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniconda-version: latest
+          auto-activate-base: false
+          channels: defaults, conda-forge
+          python-version: "3.11"
+
       - name: Install uv
         uses: astral-sh/setup-uv@v1
 
