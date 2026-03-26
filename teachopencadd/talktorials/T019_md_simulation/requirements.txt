@@ -6,3 +6,10 @@ notebook
 nbformat
 ipywidgets
 jupyterlab-widgets
+mdtraj # conda
+openmm # conda
+openmmforcefields # conda
+openff-toolkit # conda
+pdbfixer # conda
+pypdb # conda
+rdkit # conda

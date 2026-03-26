@@ -18,3 +18,6 @@ rdkit
 biotite
 bio
 git+https://github.com/volkamerlab/opencadd.git@biopython_update
+openbabel # conda
+plip # conda
+smina # conda
