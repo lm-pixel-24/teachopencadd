@@ -11,6 +11,9 @@ dependencies = [
     "rich>=14.3.3",
 ]
 
+[project.optional-dependencies]
+test = ["pytest", "nbval"]
+
 [project.scripts]
 teachopencadd = "teachopencadd.cli:main"
 
