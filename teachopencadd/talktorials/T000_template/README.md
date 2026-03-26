@@ -78,3 +78,9 @@ _Add Table of Contents (TOC) for Practical section._
 
 *Example:*
 * ChEMBL web services: [<i>Nucleic Acids Res.</i> (2015), <b>43</b>, 612-620](https://academic.oup.com/nar/article/43/W1/W612/2467881) 
+
+
+### Google Colab
+<div class="alert alert-block alert-info">
+Add the following code cell so that the notebook can be run in google colab. Make sure to add correct 'talktorial_id'.
+</div>
