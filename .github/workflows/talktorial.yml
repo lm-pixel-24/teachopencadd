@@ -82,6 +82,14 @@ jobs:
           sudo apt-get clean
           df -h
 
+      - name: Cache Conda packages
+        uses: actions/cache@v4
+        with:
+          path: ~/conda_pkgs_dir
+          key: ${{ runner.os }}-conda-${{ hashFiles('pyproject.toml', 'setup.py') }}
+          restore-keys: |
+            ${{ runner.os }}-conda-
+
       - name: Install Miniconda
         uses: conda-incubator/setup-miniconda@v3
         with:
@@ -89,12 +97,17 @@ jobs:
           auto-activate-base: false
           channels: defaults, conda-forge
           python-version: "3.11"
+          use-only-tar-bz2: true
+          pkgs-dirs: ~/conda_pkgs_dir
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v1
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "**/pyproject.toml"
 
       - name: Sync uv environment
-        run: uv sync  --extra=test
+        run: uv sync --extra test
 
       - name: Install dependencies
         run: |
