@@ -85,8 +85,8 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v1
 
-      - name: Set up Python
-        run: uv python install
+      - name: Sync uv environment
+        run: uv sync --venv .venv --extras test
 
       - name: Cache uv
         uses: actions/cache@v4
