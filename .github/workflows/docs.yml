@@ -19,15 +19,11 @@ jobs:
     name: Docs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
 
-      - uses: conda-incubator/setup-miniconda@v2
+      - uses: conda-incubator/setup-miniconda@v3
         with:
-          python-version: "3.8"
-          miniforge-variant: Mambaforge
-          miniforge-version: latest
-          activate-environment: teachopencadd
-          environment-file: devtools/test_env.yml
+          python-version: "3.12"
 
       - name: Additional info about the build
         shell: bash
@@ -36,10 +32,14 @@ jobs:
           df -h
           ulimit -a
 
-      - name: Install package
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y pandoc
+
+      - name: Install package and dependencies
         shell: bash -l {0}
         run: |
-          pip install . --no-deps -vv
+          pip install sphinx
+          pip install -r docs/requirement.txt
 
       - name: Environment Information
         shell: bash -l {0}
@@ -58,34 +58,29 @@ jobs:
           sed -i 's|src="images/butina_full.pdf"|src="../_images/butina_full.pdf"|g' \
             _build/html/talktorials/T005_compound_clustering.html
 
-      - name: Check 404s (Sphinx)
-        shell: bash -l {0}
-        run: |
-          cd docs/_build/html
-          npx linkinator . --verbosity error --recurse -r --retry-errors-jitter --timeout 10000 \
-            -s "/*.txt" \
-            -s "https://onlinelibrary.wiley.com/doi/*" \
-            -s "https://wires.onlinelibrary.wiley.com/doi/*" \
-            -s "https://chemistry-europe.onlinelibrary.wiley.com/doi/*" \
-            -s "https://towardsdatascience.com" \
-            -s "https://medium.com" \
-            -s "https://*.medium.com" \
-            -s "http[s]://quora.com" \
-            -s "http[s]://doi.org/*" \
-            -s "http[s]://pubs.acs.org/*" \
-            -s "ftp://*" \
-            -s "https://machinelearningmastery.com/*" \
-            -s "https://www.schrodinger.com/training/videos/*" \
-            -s "/*.mp4" \
-            -s "/*.pdf" \
-            -s "/*.png" \
-            -s "https://www.icoa.fr/pkidb/index.html" \
-            
-
-      - name: Check 404s (README)
-        uses: gaurav-nelson/github-action-markdown-link-check@v1
+      - name: Check URLs
+        uses: lycheeverse/lychee-action@v2
         with:
-          max-depth: 1
+          args: >-
+            --retry-wait-time 2
+            --max-retries 3
+            --exclude "wiley\.com"
+            --exclude "towardsdatascience\.com"
+            --exclude "medium\.com"
+            --exclude "quora\.com"
+            --exclude "doi\.org"
+            --exclude "pubs\.acs\.org"
+            --exclude "ftp://"
+            --exclude "machinelearningmastery\.com"
+            --exclude "schrodinger\.com/training/videos"
+            --exclude "icoa\.fr/pkidb"
+            --exclude "\.txt$"
+            --exclude "\.mp4$"
+            --exclude "\.pdf$"
+            --exclude "\.png$"
+            "docs/_build/html/**/*.html" "README.md"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
