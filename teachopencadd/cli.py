@@ -181,8 +181,16 @@ def test_talktorial(talktorial_dir: Path, env_name: str):
         )
         run_command(install_cmd, check=True, shell=IS_WIN)
 
+        test_env = os.environ.copy()
+        test_env["PATH"] = f"{bin_dir}{os.pathsep}{test_env.get('PATH', '')}"
+    
+        if not IS_WIN:
+            lib_dir = str(Path(bin_dir).parent / "lib")
+            test_env["LD_LIBRARY_PATH"] = f"{lib_dir}{os.pathsep}{test_env.get('LD_LIBRARY_PATH', '')}"
+
         run_command(
             [python_exe, "-m", "pytest", "--nbval-lax", str(talktorial)],
+            env=test_env,
         )
 
 
