@@ -2,9 +2,9 @@
 torch
 torch_geometric
 numpy<2
+pandas==3.0.1
 matplotlib
 tqdm
-pandas
 #ipynb pkgs
 notebook
 nbformat

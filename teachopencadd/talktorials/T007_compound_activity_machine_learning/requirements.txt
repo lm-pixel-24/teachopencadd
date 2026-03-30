@@ -1,8 +1,8 @@
 #python=3.12.0
+pandas==3.0.1
+rdkit==2025.9.3
 scikit-learn
-rdkit
 matplotlib
-pandas
 numpy
 #ipynb pkgs
 notebook

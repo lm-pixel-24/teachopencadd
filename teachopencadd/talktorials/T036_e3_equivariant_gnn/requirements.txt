@@ -6,7 +6,7 @@ torch-scatter
 numpy<2
 matplotlib
 tqdm
-pandas
+pandas==3.0.1
 #ipynb pkgs
 notebook
 nbformat

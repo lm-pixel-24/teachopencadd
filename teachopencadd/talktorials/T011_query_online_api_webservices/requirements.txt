@@ -1,6 +1,6 @@
 #python=3.12.0
 numpy
-pandas
+pandas==3.0.1
 matplotlib
 bio
 bravado

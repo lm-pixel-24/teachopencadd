@@ -1,13 +1,13 @@
 #python=3.12.0
+pandas==3.0.1
+rdkit==2025.9.3
 torch
 torch_geometric
 pypdb
-rdkit
 biotite
 chembl_webresource_client
 tqdm
 numpy<2
-pandas
 matplotlib
 #ipynb pkgs
 notebook

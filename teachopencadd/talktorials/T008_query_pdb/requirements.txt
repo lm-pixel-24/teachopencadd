@@ -12,11 +12,11 @@ ipywidgets
 jupyterlab-widgets
 #OpenCADD pkgs
 MDAnalysis
-pandas
+pandas==3.0.1
+rdkit==2025.9.3
 redo
 bravado
 biopandas
-rdkit
 biotite
 bio
 #git+https://github.com/volkamerlab/opencadd.git@biopython_update

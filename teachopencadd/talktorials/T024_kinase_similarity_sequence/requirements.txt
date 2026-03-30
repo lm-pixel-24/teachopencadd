@@ -1,6 +1,6 @@
 #python=3.12.0
 numpy<2
-pandas
+pandas==3.0.1
 seaborn
 biotite
 #ipynb pkgs

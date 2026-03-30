@@ -1,8 +1,8 @@
 #python=3.12.0
-pandas
+pandas==3.0.1
+rdkit==2025.9.3
 numpy
 matplotlib
-rdkit
 #ipynb pkgs
 notebook
 nbformat
