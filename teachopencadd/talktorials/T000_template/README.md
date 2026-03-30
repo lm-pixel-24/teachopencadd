@@ -84,3 +84,10 @@ _Add Table of Contents (TOC) for Practical section._
 <div class="alert alert-block alert-info">
 Add the following code cell so that the notebook can be run in google colab. Make sure to add correct 'talktorial_id'.
 </div>
+
+
+## Requirements
+
+<div class="alert alert-block alert-info">
+Place the requirements.txt file in the same directory as the corresponding .ipynb notebook. This file must follow a specific format where the required Python version is specified as a comment on the first line (e.g., # python=3.12). Please refer to the existing talktorial files to ensure your metadata and dependency list match the required structure.
+</div>
