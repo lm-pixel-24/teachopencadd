@@ -20,3 +20,4 @@ bio
 git+https://github.com/volkamerlab/opencadd.git@biopython_update
 openbabel # conda
 smina # conda
+
