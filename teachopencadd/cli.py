@@ -50,9 +50,7 @@ def package_info(req_file):
             if py_match:
                 python_version = py_match.group(1)
                 if line.lower().startswith("python") or line.startswith("#"):
-                    if not conda_tag_pattern.search(
-                        line
-                    ):
+                    if not conda_tag_pattern.search(line):
                         continue
 
             if line.startswith("#"):
@@ -184,10 +182,12 @@ def test_talktorial(talktorial_dir: Path, env_name: str):
         bin_dir = str(Path(python_exe).parent)
         test_env = os.environ.copy()
         test_env["PATH"] = f"{bin_dir}{os.pathsep}{test_env.get('PATH', '')}"
-    
+
         if not IS_WIN:
             lib_dir = str(Path(bin_dir).parent / "lib")
-            test_env["LD_LIBRARY_PATH"] = f"{lib_dir}{os.pathsep}{test_env.get('LD_LIBRARY_PATH', '')}"
+            test_env["LD_LIBRARY_PATH"] = (
+                f"{lib_dir}{os.pathsep}{test_env.get('LD_LIBRARY_PATH', '')}"
+            )
 
         run_command(
             [python_exe, "-m", "pytest", "--nbval-lax", str(talktorial)],
@@ -325,16 +325,22 @@ def run(txxx, test_mode=False):
         start_talktorial(talktorial_dir, env_name)
 
 
+def parse_talktorial(ident):
+    ident = int(str(ident).lstrip("T0").partition("_")[0])
+    return "T{0:03}".format(ident)
+
+
 def main():
     parser = argparse.ArgumentParser(description="CLI.")
     parser.add_argument(
-        "--talktorial", "-t", help="Taltorial to run, e.g., T001", required=True
+        "talktorial",
+        help="Taltorial to run, e.g., T001 or 1",
     )
     parser.add_argument(
         "--test", action="store_true", help="Test the talktorial using pytest."
     )
     args = parser.parse_args()
-    run(args.talktorial, args.test)
+    run(parse_talktorial(args.talktorial), args.test)
 
 
 if __name__ == "__main__":

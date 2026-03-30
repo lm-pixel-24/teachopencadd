@@ -105,4 +105,4 @@ jobs:
         shell: bash -l {0}
         run: |
           echo "Running ${{ matrix.talktorial }}"
-          python -m teachopencadd.cli -t ${{ matrix.talktorial }} --test
+          python -m teachopencadd.cli ${{ matrix.talktorial }} --test
