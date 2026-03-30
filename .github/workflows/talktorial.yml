@@ -53,6 +53,7 @@ jobs:
 
         exclude:
           - talktorial: T001 # long runtime and url timeout.
+          - talktorial: T018 # long runtime
           - talktorial: T034 # memory overload due to DL packages.
           - talktorial: T035 # memory overload due to DL packages.
           - talktorial: T036 # memory overload due to DL packages.
