@@ -33,27 +33,40 @@ def run_command(command, verbose=True, **kwargs):
 
 
 def package_info(req_file):
+    python_version = "3.11"  # Default fallback if not found
     conda_pkgs = []
     pip_pkgs = []
 
-    conda_pattern = re.compile(r"^([^#]+)\s*#\s*conda\b", re.IGNORECASE)
+    py_pattern = re.compile(r"#python\s*[=:]\s*([\d\.]+)", re.IGNORECASE)
+    conda_tag_pattern = re.compile(r"^([^#]+)\s*#\s*conda\b", re.IGNORECASE)
 
     with open(req_file, "r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
-            if not line or line.startswith("#"):
+            if not line:
                 continue
 
-            match = conda_pattern.match(line)
-            if match:
-                pkg_name = match.group(1).strip()
-                conda_pkgs.append(pkg_name)
+            py_match = py_pattern.search(line)
+            if py_match:
+                python_version = py_match.group(1)
+                if line.lower().startswith("python") or line.startswith("#"):
+                    if not conda_tag_pattern.search(
+                        line
+                    ):
+                        continue
+
+            if line.startswith("#"):
+                continue
+
+            conda_match = conda_tag_pattern.match(line)
+            if conda_match:
+                conda_pkgs.append(conda_match.group(1).strip())
             else:
                 pkg_name = line.split("#")[0].strip()
                 if pkg_name:
                     pip_pkgs.append(pkg_name)
 
-    return None, conda_pkgs, pip_pkgs
+    return python_version, conda_pkgs, pip_pkgs
 
 
 def get_python_path(env_name):
