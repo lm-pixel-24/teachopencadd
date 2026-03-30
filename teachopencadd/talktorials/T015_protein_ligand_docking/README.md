@@ -50,7 +50,7 @@ In this talktorial, we will use molecular docking to predict the binding mode of
     - McNutt _et al._, [_J Cheminform_ (2021), __13__, 43, 13-43](https://doi.org/10.1186/s13321-021-00522-2)
 - Visual inspection of docking results: Fischer et al., [_J Med Chem_ (2021), __64__, 5, 2489–2500](https://doi.org/10.1021/acs.jmedchem.0c02227)
 - Tools used
-    - [OpenBabel](http://openbabel.org/wiki/Main_Page)
+    - [OpenBabel](http://openbabel.org)
     - [Smina](https://sourceforge.net/projects/smina/)
     - [NGLView](http://nglviewer.org/nglview/latest/)
 
