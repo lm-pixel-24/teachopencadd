@@ -181,6 +181,7 @@ def test_talktorial(talktorial_dir: Path, env_name: str):
         )
         run_command(install_cmd, check=True, shell=IS_WIN)
 
+        bin_dir = str(Path(python_exe).parent)
         test_env = os.environ.copy()
         test_env["PATH"] = f"{bin_dir}{os.pathsep}{test_env.get('PATH', '')}"
     
