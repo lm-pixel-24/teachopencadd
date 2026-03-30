@@ -15,7 +15,7 @@ IS_WIN = "win32" in str(sys.platform.lower())
 
 
 def run_command(command, verbose=True, **kwargs):
-    kwargs |= dict(shell=IS_WIN, capture_output=True, text=True)
+    kwargs |= dict(shell=False, capture_output=True, text=True)
     result = subprocess.run(command, **kwargs)
     if result.returncode != 0:
         print("\n" + "=" * 50)
