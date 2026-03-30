@@ -70,6 +70,8 @@ jobs:
           - os: windows-latest
             talktorial: T016
           - os: windows-latest
+            talktorial: T018
+          - os: windows-latest
             talktorial: T019
 
     steps:
