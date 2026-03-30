@@ -5,7 +5,7 @@ To compile the docs, first ensure that Sphinx and the ReadTheDocs theme are inst
 
 
 ```bash
-pip install sphinx sphinx_rtd_theme sphinx-gallery sphinx-material sphinx-copybutton sphinxext-opengraph "sphinx-autodoc-typehints<3.9" pandoc nbsphinx nbsphinx-link ipython numpydoc "docutils<0.21"
+pip install -r requirements.txt
 ```
 
 
