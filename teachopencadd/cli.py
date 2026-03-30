@@ -33,31 +33,27 @@ def run_command(command, verbose=True, **kwargs):
 
 
 def package_info(req_file):
-    """
-    Parses requirements. Separates conda-specific packages.
-    Example line in requirements.txt:
-    rdkit # conda
-    """
-    with open(req_file, "r") as f:
-        lines = f.read().splitlines()
-
-    py_vrs_line = lines[0]
-    assert py_vrs_line.startswith("#python="), "First line must be #python=3.x.x"
-    py_vrs = re.findall(r"[\d.]+", py_vrs_line)[0]
-
     conda_pkgs = []
     pip_pkgs = []
 
-    for line in lines[1:]:
-        line = line.strip()
-        if not line or line.startswith("#"):
-            continue
-        if "# conda" in line.lower():
-            conda_pkgs.append(line.split("#")[0].strip())
-        else:
-            pip_pkgs.append(line.split("#")[0].strip())
+    conda_pattern = re.compile(r"^([^#]+)\s*#\s*conda\b", re.IGNORECASE)
 
-    return py_vrs, conda_pkgs, pip_pkgs
+    with open(req_file, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+
+            match = conda_pattern.match(line)
+            if match:
+                pkg_name = match.group(1).strip()
+                conda_pkgs.append(pkg_name)
+            else:
+                pkg_name = line.split("#")[0].strip()
+                if pkg_name:
+                    pip_pkgs.append(pkg_name)
+
+    return None, conda_pkgs, pip_pkgs
 
 
 def get_python_path(env_name):
