@@ -14,6 +14,24 @@ TALKTORIAL_FILE = "talktorial.ipynb"
 IS_WIN = "win32" in str(sys.platform.lower())
 
 
+def run_command(command, verbose=True, **kwargs):
+    kwargs |= dict(shell=IS_WIN, capture_output=True, text=True)
+    result = subprocess.run(command, **kwargs)
+    if result.returncode != 0:
+        print("\n" + "=" * 50)
+        print(f"!!! Command {' '.join(command)} failed !!!")
+        print("=" * 50)
+        print("STDOUT:\n", result.stdout)
+        print("-" * 20)
+        print("STDERR:\n", result.stderr)
+        print("=" * 50)
+        sys.exit(result.returncode)
+
+    if verbose:
+        print(result.stdout)
+    return result
+
+
 def package_info(req_file):
     """
     Parses requirements. Separates conda-specific packages.
@@ -50,13 +68,7 @@ def get_python_path(env_name):
     try:
         cmd = "where python" if IS_WIN else "which python"
         conda_bin = get_conda_executable()
-        result = subprocess.run(
-            [conda_bin, "run", "-n", env_name, *cmd.split()],
-            capture_output=True,
-            text=True,
-            check=True,
-            shell=IS_WIN,
-        )
+        result = run_command([conda_bin, "run", "-n", env_name, *cmd.split()])
         return Path(result.stdout.strip().splitlines()[0])
     except subprocess.CalledProcessError:
         controlled_crash(f"Conda created '{env_name}' but it has no python binary.")
@@ -65,13 +77,21 @@ def get_python_path(env_name):
 def configure_env(prefix, python_version, req_file, verbose=False):
     env_name = f"{prefix}_{python_version.replace('.', '')}"
     conda_bin = get_conda_executable()
+    root_prefix = get_conda_root()
+    print(root_prefix)
+
+    base_cmd = [conda_bin]
+    print(conda_bin, "micromamba" in conda_bin)
+    if "micromamba" in conda_bin.lower():
+        base_cmd += ["-r", root_prefix]
+    print(base_cmd)
 
     print(
-        f"Creating environment '{env_name}' using {conda_bin} with Python {python_version}..."
+        f"Creating environment '{env_name}' using {conda_bin} with Python {python_version} in {root_prefix}"
     )
-    subprocess.run(
+    run_command(
         [
-            conda_bin,
+            *base_cmd,
             "create",
             "-n",
             env_name,
@@ -80,8 +100,6 @@ def configure_env(prefix, python_version, req_file, verbose=False):
             "conda-forge",
             "--yes",
         ],
-        check=True,
-        shell=IS_WIN,
     )
 
     py_vrs, conda_pkgs, pip_pkgs = package_info(req_file)
@@ -90,7 +108,7 @@ def configure_env(prefix, python_version, req_file, verbose=False):
     print(f"Found dynamic python at: {python_exe}")
 
     if conda_pkgs:
-        subprocess.run(
+        run_command(
             [
                 conda_bin,
                 "install",
@@ -101,16 +119,12 @@ def configure_env(prefix, python_version, req_file, verbose=False):
                 *conda_pkgs,
                 "--yes",
             ],
-            check=True,
-            shell=IS_WIN,
         )
 
     if pip_pkgs:
         print(f"Using uv to install dependencies into {env_name}...")
-        subprocess.run(
+        run_command(
             ["uv", "pip", "install", "--python", python_exe, *pip_pkgs],
-            check=True,
-            shell=IS_WIN,
         )
 
     return env_name
@@ -127,9 +141,9 @@ def set_ipykernel(env_name):
         else [python_exe, "-m", "pip", "install", "ipykernel"]
     )
 
-    subprocess.run(install_cmd, check=True, shell=IS_WIN)
+    run_command(install_cmd)
 
-    subprocess.run(
+    run_command(
         [
             python_exe,
             "-m",
@@ -141,8 +155,6 @@ def set_ipykernel(env_name):
             "--display-name",
             env_name,
         ],
-        check=True,
-        shell=IS_WIN,
     )
 
 
@@ -158,13 +170,31 @@ def test_talktorial(talktorial_dir: Path, env_name: str):
             if use_uv
             else [python_exe, "-m", "pip", "install", "pytest", "nbval"]
         )
-        subprocess.run(install_cmd, check=True, shell=IS_WIN)
+        run_command(install_cmd, check=True, shell=IS_WIN)
 
-        subprocess.run(
+        run_command(
             [python_exe, "-m", "pytest", "--nbval-lax", str(talktorial)],
-            check=True,
-            shell=IS_WIN,
         )
+
+
+def get_conda_root():
+    """Finds the path to the conda/mamba binary and the root prefix."""
+    conda_bin = get_conda_executable()
+
+    result = subprocess.run(
+        [conda_bin, "info", "--json"], capture_output=True, text=True, shell=IS_WIN
+    )
+    import json
+
+    data = json.loads(result.stdout)
+    root_prefix = data.get("root_prefix") or data.get("base environment")
+
+    if root_prefix == "/" or root_prefix is None:
+        root_prefix = os.path.expanduser("./micromamba")
+        if not os.path.exists(root_prefix):
+            root_prefix = os.path.expanduser("./miniconda3")
+
+    return root_prefix
 
 
 def get_conda_executable():
@@ -197,14 +227,9 @@ def conda_env_list():
         list: List of conda environment names.
     """
     conda_bin = get_conda_executable()
-    result = subprocess.run(
+    result = run_command(
         [conda_bin, "env", "list"],
-        capture_output=True,
-        text=True,
-        shell=IS_WIN,
     )
-    if result.returncode != 0:
-        controlled_crash("Error listing conda environments: " + result.stderr)
 
     envs = result.stdout.splitlines()
     return [line.split()[0] for line in envs if line and not line.startswith("#")]
@@ -245,7 +270,7 @@ def start_talktorial(talktorial_dir: Path, env_name: str):
     if talktorial.exists():
         print(f"Starting talktorial {talktorial}")
         notebook_cmd = f"conda run -n {env_name} jupyter notebook {str(talktorial)}"
-        subprocess.run(notebook_cmd, shell=True)
+        run_command(notebook_cmd, shell=True)
     else:
         controlled_crash(f"Error: Notebook '{talktorial}' not found.")
 
