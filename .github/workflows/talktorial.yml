@@ -74,14 +74,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Clean disk space (Ubuntu only)
-        if: runner.os == 'Linux'
-        run: |
-          echo "Cleaning disk space..."
-          sudo apt-get clean
-          echo "Disk space remaining after clean:"
-          df -h
-
       - name: Setup Micromamba
         uses: mamba-org/setup-micromamba@v3
         with:
