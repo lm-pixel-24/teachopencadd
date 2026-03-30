@@ -11,8 +11,8 @@ nbformat
 ipywidgets
 jupyterlab-widgets
 #OpenCADD pkgs
-pandas==3.0.1
-rdkit==2025.9.3
+pandas
+rdkit
 MDAnalysis
 pandas 
 bravado

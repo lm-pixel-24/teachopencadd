@@ -1,6 +1,6 @@
 #python=3.12.0
-pandas==3.0.1
-rdkit==2025.9.3
+pandas
+rdkit
 nglview
 #ipynb pkgs
 notebook
