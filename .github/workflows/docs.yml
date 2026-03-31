@@ -35,7 +35,7 @@ jobs:
           args: >
             --accept '200..205, 403, 503, 504'
             --insecure
-            --no-progress
+            --exclude-link-local
             --remotes-only
             --exclude "http://localhost:.*"
             --exclude "http://127.0.0.1:.*"
