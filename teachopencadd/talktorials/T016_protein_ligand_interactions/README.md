@@ -44,6 +44,3 @@ To this end, we use two Python tools: the first one, called the Protein–Ligand
 * Tools
     * NGLView, the interactive molecule visualizer for Jupyter notebooks ([_Bioinformatics_ (2018), __34__, 1241–124](https://doi.org/10.1093/bioinformatics/btx789))
     * PLIP, the Protein–Ligand Interaction Profiler ([_Nucl. Acids Res._ (2015), __43__, W1, W443-W447](https://academic.oup.com/nar/article/43/W1/W443/2467865))
-
-
-## Install conda packages
