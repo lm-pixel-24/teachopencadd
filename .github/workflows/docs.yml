@@ -34,7 +34,8 @@ jobs:
         with:
           args: >
             --accept '200..205, 403, 503, 504'
-            --insecure--exclude-loopback
+            --insecure
+            --exclude-loopback
             --exclude-all-private
             --exclude-path "docs/_build/html/.*"
             --exclude ".*\.mp4"
