@@ -11,6 +11,23 @@ dependencies = [
     "rich>=14.3.3",
 ]
 
+[dependency-groups]
+docs = [
+  "sphinx",
+  "sphinx_rtd_theme",
+  "sphinx-gallery",
+  "sphinx-material",
+  "sphinx-copybutton",
+  "sphinxext-opengraph",
+  "sphinx-autodoc-typehints<3.9",
+  "pandoc",
+  "nbsphinx",
+  "nbsphinx-link",
+  "ipython",
+  "numpydoc",
+  "docutils<0.21",
+]
+
 [project.scripts]
 teachopencadd = "teachopencadd.cli:main"
 

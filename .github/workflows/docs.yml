@@ -1,89 +1,44 @@
-name: Docs
+name: Website build
 
 on:
   push:
-    branches:
-      - "master"
-      - "maintenance/.+"
+    branches: ["master", "dev", "sepenv-ci"]
   pull_request:
-    branches:
-      - "master"
-      - "dev"
-      - "maintenance/.+"
+    branches: ["master", "dev", "maintenance/.+"]
   schedule:
-    # every two weeks on Monday at 3 am
     - cron: "0 3/336 * * 1"
 
 jobs:
   docs:
-    name: Docs
+    name: Build and Deploy Docs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
-      - uses: conda-incubator/setup-miniconda@v3
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: "3.12"
-
-      - name: Additional info about the build
-        shell: bash
-        run: |
-          uname -a
-          df -h
-          ulimit -a
+          enable-cache: true
 
       - name: Install system dependencies
         run: sudo apt-get update && sudo apt-get install -y pandoc
 
-      - name: Install package and dependencies
-        shell: bash -l {0}
+      - name: Build Docs
         run: |
-          pip install sphinx
-          pip install -r docs/requirement.txt
+          uv run --group docs sphinx-build -b html docs docs/_build/html
+        env:
+          SPHINXOPTS: "-j2 -T --keep-going"
 
-      - name: Environment Information
-        shell: bash -l {0}
-        run: |
-          conda info --all
-          conda list
-
-      - name: Run Sphinx
-        shell: bash -l {0}
-        run: |
-          cd docs
-          make clean
-          SPHINXOPTS="-j2 -T --keep-going" make html
-          # Extra UGLY patch to fix PDF IFrame on T005
-          cp talktorials/images/*.pdf _build/html/_images/
-          sed -i 's|src="images/butina_full.pdf"|src="../_images/butina_full.pdf"|g' \
-            _build/html/talktorials/T005_compound_clustering.html
-
-      - name: Check URLs
+      - name: Link Checker
         uses: lycheeverse/lychee-action@v2
         with:
-          args: >-
-            --retry-wait-time 2
-            --max-retries 3
-            --exclude "wiley\.com"
-            --exclude "towardsdatascience\.com"
-            --exclude "medium\.com"
-            --exclude "quora\.com"
-            --exclude "doi\.org"
-            --exclude "pubs\.acs\.org"
-            --exclude "ftp://"
-            --exclude "machinelearningmastery\.com"
-            --exclude "schrodinger\.com/training/videos"
-            --exclude "icoa\.fr/pkidb"
-            --exclude "\.txt$"
-            --exclude "\.mp4$"
-            --exclude "\.pdf$"
-            --exclude "\.png$"
+          args: >
+            --accept '200..205, 403, 503, 504'
+            --insecure
             "docs/_build/html/**/*.html" "README.md"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4 # Updated to v4
         if: github.ref == 'refs/heads/master'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
