@@ -37,7 +37,6 @@ jobs:
             --insecure
             --no-progress
             --exclude-all-private
-            --exclude-path "docs/_build/html/.*"
             --exclude "^file://.*"
             --exclude "http://localhost:.*"
             --exclude "http://127.0.0.1:.*"
