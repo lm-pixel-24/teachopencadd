@@ -101,6 +101,9 @@ def main(talktorial, branch, output_dir):
 
     print(f"\nDone. Files saved under: {output_dir}")
 
+def parse_talktorial(ident):
+    ident = int(str(ident).lstrip("T0").partition("_")[0])
+    return "T{0:03}".format(ident)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -118,4 +121,4 @@ if __name__ == "__main__":
     parser.add_argument("--output_dir", "-o", default=OUTPUT_DIR, help="download location.")
     args = parser.parse_args()
 
-    main(args.talktorial, args.branch, args.output_dir)
+    main(parse_talktorial(args.talktorial), args.branch, args.output_dir)
