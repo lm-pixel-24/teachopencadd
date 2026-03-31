@@ -35,9 +35,11 @@ jobs:
           args: >
             --accept '200..205, 403, 503, 504'
             --insecure
-            --exclude-loopback
+            --no-progress
             --exclude-all-private
-            --exclude-path "docs/_build/html/.*"
+            --exclude "http://localhost:.*"
+            --exclude "http://127.0.0.1:.*"
+            --exclude "local://.*"
             --exclude ".*\.mp4"
             --exclude ".*\.pdf"
             --exclude ".*\.png"
