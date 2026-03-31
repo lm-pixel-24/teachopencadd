@@ -9,6 +9,7 @@ on:
 jobs:
   cli-scripts:
     name: ${{ matrix.talktorial }} on ${{ matrix.os }}
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     strategy:
