@@ -3,6 +3,7 @@ import os
 import sys
 from datetime import datetime
 from importlib.metadata import version as get_version
+from pathlib import Path
 
 # -- Path setup --------------------------------------------------------------
 # With 'uv run', the package is installed in the environment, 
@@ -24,6 +25,14 @@ try:
 except Exception:
     version = "dev"
     release = "dev"
+
+# -- Scrape for images -------------------------------------------------------
+talktorials_dir = Path(__file__).parent.parent / "teachopencadd" / "talktorials"
+image_folders = [str(p.absolute()) for p in talktorials_dir.glob("**/images")]
+
+html_static_path = ["_static"] + image_folders
+
+suppress_warnings = ["docutils.duplicate_substitution"]
 
 # -- General configuration ---------------------------------------------------
 extensions = [
@@ -61,7 +70,7 @@ import sphinx_material
 html_theme_path = sphinx_material.html_theme_path()
 html_context = sphinx_material.get_html_context()
 
-html_static_path = ["_static", "../talktorials/images"] # Harvesting the PDFs
+# html_static_path = ["_static", "../talktorials/images"] # Harvesting the PDFs
 html_css_files = ["custom.css"]
 
 html_theme_options = {
