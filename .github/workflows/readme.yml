@@ -1,54 +1,52 @@
-name: Regenerate READMEs
+name: Format and Regenerate README
 
 on:
   push:
-    paths:
-      - "teachopencadd/talktorials/**/talktorial.ipynb"
-  pull_request:
+    branches: ["master", "dev", "sepenv-ci"]
     paths:
       - "teachopencadd/talktorials/**/talktorial.ipynb"
 
 jobs:
-  regenerate:
+  build:
     runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
 
     steps:
       - uses: actions/checkout@v6
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
-      - name: Skip bot commits
-        if: github.actor == 'teachopencadd-readme-bot'
-        run: |
-          echo "Triggered by bot, skipping to avoid loop."
-          exit 0
-
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
       - name: Install dependencies
-        run: python -m pip install nbformat shyaml
-
-      - name: Regenerate READMEs
         run: |
+          python -m pip install --upgrade pip
+          pip install nbformat shyaml "black[jupyter]"
+
+      - name: Process Notebooks
+        run: |
+          black --ipynb -l 99 teachopencadd/talktorials/T*/talktorial.ipynb
+          
           for path in teachopencadd/talktorials/T*/talktorial.ipynb; do
-            python devtools/regenerate_readmes.py --output README.md "$path"
+            DIR=$(dirname "$path")
+            python devtools/regenerate_readmes.py "$path" --output "$DIR/README.md"
           done
 
-      - name: Commit changes if needed
+      - name: Commit and Push
         run: |
-          git config user.name "teachopencadd-readme-bot"
+          git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          if ! git diff --quiet; then
-            git add teachopencadd/talktorials/T*/README.md
-            git commit -m "Auto-update README.md files [skip ci]"
-
-            git pull --rebase origin ${{ github.ref_name }}
-
+          
+          git add teachopencadd/talktorials/T*/talktorial.ipynb
+          git add teachopencadd/talktorials/T*/README.md
+          
+          if ! git diff --staged --quiet; then
+            git commit -m "Auto-format notebooks and update READMEs [skip ci]"
             git push
           else
-            echo "No changes to commit"
+            echo "No changes detected."
           fi
