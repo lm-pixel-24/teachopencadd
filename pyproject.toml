@@ -1,0 +1,42 @@
+[project]
+name = "teachopencadd"
+dynamic = ["version"]
+description = "A teaching platform for computer-aided drug design (CADD) using open source packages and data."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "black>=26.3.1",
+    "jupyterlab>=4.5.6",
+    "nbconvert>=7.17.0",
+    "rich>=14.3.3",
+]
+
+[dependency-groups]
+docs = [
+  "sphinx",
+  "sphinx_rtd_theme",
+  "sphinx-gallery",
+  "sphinx-material",
+  "sphinx-copybutton",
+  "sphinxext-opengraph",
+  "sphinx-autodoc-typehints<3.9",
+  "matplotlib",
+  "ipywidgets",
+  "pandoc",
+  "nbsphinx",
+  "nbsphinx-link",
+  "ipython",
+  "numpydoc",
+  "docutils<0.21",
+]
+
+[project.scripts]
+teachopencadd = "teachopencadd.cli:main"
+
+[build-system]
+requires = ["setuptools>=64", "setuptools_scm"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+version_scheme = "post-release"
+local_scheme = "no-local-version"

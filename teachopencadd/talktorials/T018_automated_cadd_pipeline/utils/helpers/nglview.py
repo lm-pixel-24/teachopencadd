@@ -6,6 +6,8 @@ import time  # for creating pauses during the runtime (e.g. to wait for the resp
 from pathlib import Path  # for creating folders and handling local paths
 
 import nglview as nv  # for visualization of the protein and protein-related data
+from pypdb.clients.pdb.pdb_client import get_pdb_file
+
 from ipywidgets import (
     AppLayout,
     Layout,
@@ -23,6 +25,20 @@ import pandas as pd  # for creating dataframes and handling data
 # Settings:
 mpl.rcParams["figure.dpi"] = 300  # for plots with higher resolution
 mpl.rcParams["agg.path.chunksize"] = 10000  # for handling plots with large number of data points
+
+
+def get_structure(pdb_id):
+    # download the PDB file content.
+    pdb_file_content = get_pdb_file(pdb_id) 
+    # create an nglview structure object from the content
+    structure = nv.TextStructure(pdb_file_content, ext='pdb')
+    return structure
+    
+def get_pdb_nglviewer(pdb_id, default_representation=True, gui=False):
+    structure = get_structure(pdb_id)
+    # set structure viewer
+    nglviewer = nv.show_file(structure, default_representation=default_representation, gui=gui)
+    return nglviewer
 
 
 def protein(input_type, input_value, output_image_filename=None):
@@ -47,7 +63,8 @@ def protein(input_type, input_value, output_image_filename=None):
     """
 
     if input_type == "pdb_code":
-        viewer = nv.show_pdbid(input_value)
+        # viewer = nv.show_pdbid(input_value)
+        viewer = get_pdb_nglviewer(input_value)
     else:
         with open(input_value) as f:
             viewer = nv.show_file(f, ext=input_type, default_representation=False)

@@ -54,5 +54,5 @@ _Note_: We focus on similarities between orthosteric kinase binding sites; simil
 * Substitution matrix: [<i>PNAS</i> (1992), <b>89(22)<b>, 10915-10919](https://doi.org/10.1073/pnas.89.22.10915)
 * Biotite
     * Documentation: https://www.biotite-python.org/index.html
-    * [Blosum matrix](https://www.biotite-python.org/examples/gallery/sequence/blosum_dendrogram.html?highlight=blosum)
+    * [Substitution matrix](https://www.biotite-python.org/latest/apidoc/biotite.sequence.align.SubstitutionMatrix.html)
 * Sequence logo: http://www.cbs.dtu.dk/biotools/Seq2Logo/    

@@ -47,25 +47,122 @@ Each topic is covered in an interactive Jupyter Notebook, using open source pack
 
 <!-- markdown-link-check-disable -->
 [![GH Actions Docs](https://github.com/volkamerlab/teachopencadd/workflows/Docs/badge.svg)](https://projects.volkamerlab.org/teachopencadd/)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/volkamerlab/TeachOpenCADD/master)
-<!-- markdown-link-check-enable -->
 
 If you can't wait and just want to read through the materials, please go to the read-only version [here](https://projects.volkamerlab.org/teachopencadd/talktorials.html).
 
-If you'd like to execute the provided notebooks, we offer two possibilities:
+You can run the TeachOpenCADD talktorials either in the cloud for an instant start or locally for a full development experience.
 
-<!-- markdown-link-check-disable-next-line -->
-- Online thanks to [Binder](https://mybinder.org/). This takes around 10 minutes to get ready, but does not require any kind of setup on your end. Click here to get started: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/volkamerlab/TeachOpenCADD/master). Once it has loaded, you can navigate to `teachopencadd/talktorials/` to find the executable notebooks.
-- Locally using our `conda` package. More details in this [section of the documentation](https://projects.volkamerlab.org/teachopencadd/installing.html).
+### Run Online
+The fastest way to explore is via **Google Colab**. No installation is required.
+* Navigate to the **Talktorials** list below in [Open in Google Colab](#open-in-google-colab) section.
+* Click the notebook URL on the title column to launch the tutorial directly in your browser.
+
+---
+
+### Run Locally
+To set up the project on your machine, follow these steps:
+
+#### 1. Clone the repository
+Open your terminal and clone the repository:
+```bash
+git clone https://github.com/volkamerlab/teachopencadd.git
+cd teachopencadd
+```
+
+#### 2. Execute notebooks
+The inside the main directory run the following command, <span style="color:red">please make sure you have `conda` installed</span>.
+
+```bash
+python main.py -t T001
+```
+
+Here `T001` is the ID referring to the talktorial to execute.
+
+It will take couple of minutes if you're running a particular notebook for the very first time. First, internally it will create a conda virtual environment and install all the necessary python packages need, you can see the logs in the terminal. Then the notebook will launch in your browser.
+
+
+## Open in Google Colab
+
+| Talktorial | Title                                           |
+|     :-:    | :---                                            |
+|    T001    | [Compound data acquisition (ChEMBL)][1]  | 
+|    T002    | [Molecular filtering: ADME and lead-likeness criteria][2]|
+|    T003    | [Molecular filtering: unwanted substructures][3]|
+|    T004    | [Ligand-based screening: compound similarity][4]|
+|    T005    | [Compound clustering][5]| 
+|    T006    | [Maximum common substructure][6]|
+|    T007    | [Ligand-based screening: machine learning][7]|
+|    T008    | [Protein data acquisition: Protein Data Bank (PDB)][8]|
+|    T009    | [Ligand-based pharmacophores][9]|
+|    T010    | [Binding site similarity and off-target prediction][10]|
+|    T011    | [Querying online API webservices][11]|
+|    T012    | [Data acquisition from KLIFS][12]|
+|    T013    | [Data acquisition from PubChem][13]|
+|    T014    | [Binding site detection][14]|
+|    T015    | [Protein ligand docking][15]|
+|    T016    | [Protein-ligand interactions][16]|
+|    T017    | [Advanced NGLview usage][17]|
+|    T018    | [Automated pipeline for lead optimization][18]|
+|    T019    | [Molecular dynamics simulation][19]|
+|    T020    | [Analyzing molecular dynamics simulations][20]|
+|    T021    | [One-Hot Encoding][21]|
+|    T022    | [Ligand-based screening: neural networks][22]|
+|    T023    | [What is a kinase?][23]|
+|    T024    | [Kinase similarity: Sequence][24]|
+|    T025    | [Kinase similarity: Kinase pocket (KiSSim fingerprint)][25]|
+|    T026    | [Kinase similarity: Interaction fingerprints][26]|
+|    T027    | [Kinase similarity: Ligand profile][27]|
+|    T028    | [Kinase similarity: Compare different perspectives][28]|
+|    T033    | [Molecular representations][33]|
+|    T034    | [RNN-based molecular property prediction][34]|
+|    T035    | [GNN-based molecular property prediction][35]|
+|    T036    | [An introduction to E(3)-invariant graph neural networks][36]|
+|    T037    | [Uncertainty estimation][37]|
+|    T038    | [Protein Ligand Interaction Prediction][38]|
+
+[1]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T001_query_chembl/talktorial.ipynb
+[2]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T002_compound_adme/talktorial.ipynb
+[3]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T003_compound_unwanted_substructures/talktorial.ipynb
+[4]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T004_compound_similarity/talktorial.ipynb
+[5]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T005_compound_clustering/talktorial.ipynb
+[6]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T006_compound_maximum_common_substructures/talktorial.ipynb
+[7]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T007_compound_activity_machine_learning/talktorial.ipynb
+[8]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T008_query_pdb/talktorial.ipynb
+[9]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T009_compound_ensemble_pharmacophores/talktorial.ipynb
+[10]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T010_binding_site_comparison/talktorial.ipynb
+[11]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T011_query_online_api_webservices/talktorial.ipynb
+[12]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T012_query_klifs/talktorial.ipynb
+[13]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T013_query_pubchem/talktorial.ipynb
+[14]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T014_binding_site_detection/talktorial.ipynb
+[15]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T015_protein_ligand_docking/talktorial.ipynb
+[16]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T016_protein_ligand_interactions/talktorial.ipynb
+[17]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T017_advanced_nglview_usage/talktorial.ipynb
+[18]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T018_automated_cadd_pipeline/talktorial.ipynb
+[19]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T019_md_simulation/talktorial.ipynb
+[20]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T020_md_analysis/talktorial.ipynb
+[21]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T021_one_hot_encoding/talktorial.ipynb
+[22]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T022_ligand_based_screening_neural_network/talktorial.ipynb
+[23]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T023_what_is_a_kinase/talktorial.ipynb
+[24]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T024_kinase_similarity_sequence/talktorial.ipynb
+[25]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T025_kinase_similarity_kissim/talktorial.ipynb
+[26]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T026_kinase_similarity_ifp/talktorial.ipynb
+[27]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T027_kinase_similarity_ligand_profile/talktorial.ipynb
+[28]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T028_kinase_similarity_compare_perspectives/talktorial.ipynb
+[33]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T033_molecular_representations/talktorial.ipynb
+[34]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T034_recurrent_neural_networks/talktorial.ipynb
+[35]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T035_graph_neural_networks/talktorial.ipynb
+[36]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T036_e3_equivariant_gnn/talktorial.ipynb
+[37]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T037_uncertainty_estimation/talktorial.ipynb
+[38]: https://colab.research.google.com/github/volkamerlab/teachopencadd/blob/sepenv/teachopencadd/talktorials/T038_protein_ligand_interaction_prediction/talktorial.ipynb
 
 ## TeachOpenCADD KNIME workflows
 
 <!-- markdown-link-check-disable-next-line -->
 [![DOI](https://img.shields.io/badge/DOI-10.1021%2Facs.jcim.9b00662-blue.svg)](https://pubs.acs.org/doi/10.1021/acs.jcim.9b00662)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3626897.svg)](https://doi.org/10.5281/zenodo.3626897)
-[![KNIME Hub](https://img.shields.io/badge/KNIME%20Hub-TeachOpenCADD--KNIME-yellow.svg)](https://hub.knime.com/volkamerlab/spaces/Public/latest/TeachOpenCADD/TeachOpenCADD)
+[![KNIME Hub](https://img.shields.io/badge/KNIME%20Hub-TeachOpenCADD--KNIME-yellow.svg)](https://hub.knime.com/-/spaces/-/~xYhrR1mfFcGNxz7I/current-state/)
 
-If you prefer to work in the context of a graphical interface, talktorials T001-T008 are also available as [KNIME workflows](https://hub.knime.com/volkamerlab/space/TeachOpenCADD/TeachOpenCADD). Questions regarding this version should be addressed using the "Discussion section" available at [this post](https://forum.knime.com/t/teachopencadd-knime/17174). You need to create a KNIME account to use the forum.
+If you prefer to work in the context of a graphical interface, talktorials T001-T008 are also available as [KNIME workflows](https://hub.knime.com/-/spaces/-/~xYhrR1mfFcGNxz7I/current-state/). Questions regarding this version should be addressed using the "Discussion section" available at [this post](https://forum.knime.com/t/teachopencadd-knime/17174). You need to create a KNIME account to use the forum.
 
 ## About TeachOpenCADD
 

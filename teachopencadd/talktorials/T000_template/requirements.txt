@@ -1,0 +1,11 @@
+#python=3.12.0
+pandas
+numpy
+tqdm
+rdkit
+matplotlib
+#ipynb pkgs
+notebook
+nbformat
+ipywidgets
+jupyterlab-widgets

@@ -1,0 +1,16 @@
+#python=3.12.0
+pandas==3.0.1
+rdkit==2025.9.3
+torch
+torch_geometric
+pypdb
+biotite
+chembl_webresource_client
+tqdm
+numpy<2
+matplotlib
+#ipynb pkgs
+notebook
+nbformat
+ipywidgets
+jupyterlab-widgets

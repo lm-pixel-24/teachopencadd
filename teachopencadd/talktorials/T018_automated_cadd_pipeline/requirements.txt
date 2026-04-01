@@ -1,0 +1,24 @@
+#python=3.11.0
+numpy
+matplotlib
+nglview
+pypdb
+#ipynb pkgs
+notebook
+nbformat
+ipywidgets
+jupyterlab-widgets
+#OpenCADD pkgs
+pandas
+rdkit
+MDAnalysis
+redo
+bravado
+biopandas
+biotite
+bio
+git+https://github.com/volkamerlab/opencadd.git@biopython_update
+openbabel # conda
+plip # conda
+smina # conda
+

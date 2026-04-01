@@ -1,94 +1,72 @@
-name: Docs
+name: Build and deploy website
 
 on:
   push:
-    branches:
-      - "master"
-      - "maintenance/.+"
+    branches: ["master", "dev", "sepenv-ci"]
   pull_request:
-    branches:
-      - "master"
-      - "dev"
-      - "maintenance/.+"
+    branches: ["master", "dev", "maintenance/.+"]
   schedule:
-    # every two weeks on Monday at 3 am
     - cron: "0 3/336 * * 1"
 
 jobs:
   docs:
-    name: Docs
+    name: Build and Deploy Docs
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
 
-      - uses: conda-incubator/setup-miniconda@v2
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: "3.8"
-          miniforge-variant: Mambaforge
-          miniforge-version: latest
-          activate-environment: teachopencadd
-          environment-file: devtools/test_env.yml
+          enable-cache: true
 
-      - name: Additional info about the build
-        shell: bash
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y pandoc
+
+      - name: Build Docs
         run: |
-          uname -a
-          df -h
-          ulimit -a
+          uv run --group docs sphinx-build -b html docs docs/_build/html
+        env:
+          SPHINXOPTS: "-j2 -T --keep-going"
 
-      - name: Install package
-        shell: bash -l {0}
-        run: |
-          pip install . --no-deps -vv
-
-      - name: Environment Information
-        shell: bash -l {0}
-        run: |
-          conda info --all
-          conda list
-
-      - name: Run Sphinx
-        shell: bash -l {0}
-        run: |
-          cd docs
-          make clean
-          SPHINXOPTS="-j2 -T --keep-going" make html
-          # Extra UGLY patch to fix PDF IFrame on T005
-          cp talktorials/images/*.pdf _build/html/_images/
-          sed -i 's|src="images/butina_full.pdf"|src="../_images/butina_full.pdf"|g' \
-            _build/html/talktorials/T005_compound_clustering.html
-
-      - name: Check 404s (Sphinx)
-        shell: bash -l {0}
-        run: |
-          cd docs/_build/html
-          npx linkinator . --verbosity error --recurse -r --retry-errors-jitter --timeout 10000 \
-            -s "/*.txt" \
-            -s "https://onlinelibrary.wiley.com/doi/*" \
-            -s "https://wires.onlinelibrary.wiley.com/doi/*" \
-            -s "https://chemistry-europe.onlinelibrary.wiley.com/doi/*" \
-            -s "https://towardsdatascience.com" \
-            -s "https://medium.com" \
-            -s "https://*.medium.com" \
-            -s "http[s]://quora.com" \
-            -s "http[s]://doi.org/*" \
-            -s "http[s]://pubs.acs.org/*" \
-            -s "ftp://*" \
-            -s "https://machinelearningmastery.com/*" \
-            -s "https://www.schrodinger.com/training/videos/*" \
-            -s "/*.mp4" \
-            -s "/*.pdf" \
-            -s "/*.png" \
-            -s "https://www.icoa.fr/pkidb/index.html" \
-            
-
-      - name: Check 404s (README)
-        uses: gaurav-nelson/github-action-markdown-link-check@v1
+      - name: Link Checker
+        uses: lycheeverse/lychee-action@v2
         with:
-          max-depth: 1
+          args: >
+            --accept '200..205, 403, 503, 504'
+            --insecure
+            --no-progress
+            --exclude-all-private
+            --exclude "^file://.*"
+            --exclude "http://localhost:.*"
+            --exclude "http://127.0.0.1:.*"
+            --exclude "local://.*"
+            --exclude ".*\.mp4"
+            --exclude ".*\.pdf"
+            --exclude ".*\.png"
+            --exclude ".*\.jpg"
+            --exclude ".*\.py"
+            --exclude "./**/*.md"
+            "docs/_build/html/**/*.html" "README.md"
+
+      - name: Log Results to Summary
+        run: |
+          if [ -f lychee/report.md ]; then
+            echo "## Link Check Results" >> $GITHUB_STEP_SUMMARY
+            cat lychee/report.md >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## No broken links found!" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload Report Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: broken-links-report
+          path: lychee/report.md
 
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         if: github.ref == 'refs/heads/master'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

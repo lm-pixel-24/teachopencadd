@@ -4,7 +4,6 @@ A Python library for structural cheminformatics
 """
 import sys
 from setuptools import setup, find_packages
-import versioneer
 
 short_description = __doc__.split("\n")
 
@@ -23,12 +22,11 @@ setup(
     # Self-descriptive entries which should always be present
     name="teachopencadd",
     author="Volkamer Lab",
-    author_email="andrea.volkamer@charite.de",
+    author_email="andrea.volkamer@cs.uni-saarland.de",
     description=short_description[0],
     long_description=long_description,
     long_description_content_type="text/markdown",
-    version=versioneer.get_version(),
-    cmdclass=versioneer.get_cmdclass(),
+    use_scm_version=True,
     license="MIT",
     # Which Python importable modules should be included when your package is installed
     # Handled automatically by setuptools. Use 'exclude' to prevent some specific

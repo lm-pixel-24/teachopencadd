@@ -1,0 +1,23 @@
+#python=3.11.0
+numpy<2
+pandas
+scikit-learn
+seaborn
+matplotlib
+#ipynb pkgs
+notebook
+nbformat
+ipywidgets
+jupyterlab-widgets
+#kissim 
+git+https://github.com/volkamerlab/kissim.git@main#egg=kissim
+#OpenCADD pkgs
+pandas==3.0.1
+rdkit==2025.9.3
+MDAnalysis
+redo
+bravado
+biopandas
+biotite
+bio
+git+https://github.com/volkamerlab/opencadd.git@biopython_update
