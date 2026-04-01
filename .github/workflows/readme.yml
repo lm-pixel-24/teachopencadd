@@ -2,7 +2,7 @@ name: Format code and regenerate READMEs
 
 on:
   push:
-    branches: ["master", "dev", "sepenv-ci"]
+    branches: ["master", "dev"]
     paths:
       - "teachopencadd/talktorials/**/talktorial.ipynb"
 

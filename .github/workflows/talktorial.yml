@@ -1,9 +1,9 @@
 name: Test talktorials
 on:
   push:
-    branches: [sepenv-ci]
+    branches: [master, dev]
   pull_request:
-    branches: [sepenv-ci]
+    branches: [master, dev]
 
 jobs:
   cli-scripts:
