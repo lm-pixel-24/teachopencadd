@@ -1,28 +1,74 @@
-name: Build and deploy website
+name: Format, READMEs, and Deploy Docs
 
 on:
   push:
     branches: ["master", "dev"]
+    paths:
+      - "teachopencadd/talktorials/**/talktorial.ipynb"
+      - "docs/**"
+      - "devtools/regenerate_readmes.py"
   pull_request:
     branches: ["master", "dev", "maintenance/.+"]
   schedule:
     - cron: "0 3/336 * * 1"
 
 jobs:
-  docs:
-    name: Build and Deploy Docs
+  process-and-deploy:
+    name: Format, README, and Deploy
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
+    
+    # Required for the bot to push changes back to the repo
+    permissions:
+      contents: write
+      pages: write
+
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout Code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
 
-      - name: Install system dependencies
+      - name: Install System Dependencies
         run: sudo apt-get update && sudo apt-get install -y pandoc
+
+      # --- Part 1: Formatting & READMEs ---
+      
+      - name: Format Notebooks and Regenerate READMEs
+        run: |
+          # Install necessary tools via uv
+          uv pip install nbformat "black[jupyter]"
+          
+          # Run Black formatter
+          uv run black --ipynb -l 99 teachopencadd/talktorials/T*/talktorial.ipynb
+          
+          # Regenerate READMEs (using the fixed logic)
+          for path in teachopencadd/talktorials/T*/talktorial.ipynb; do
+            python devtools/regenerate_readmes.py "$path" --output "README.md"
+          done
+
+      - name: Commit and Push Changes
+        if: github.event_name == 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git add teachopencadd/talktorials/T*/talktorial.ipynb
+          git add teachopencadd/talktorials/T*/README.md
+          
+          if ! git diff --staged --quiet; then
+            git commit -m "Auto-format notebooks and update READMEs [skip ci]"
+            git push
+          else
+            echo "No changes detected."
+          fi
+
+      # --- Part 2: Build & Check Docs ---
 
       - name: Build Docs
         run: |
@@ -30,7 +76,7 @@ jobs:
         env:
           SPHINXOPTS: "-j2 -T --keep-going"
 
-      - name: Restore lychee cache
+      - name: Restore Lychee Cache
         uses: actions/cache@v5
         with:
           path: .lycheecache
@@ -64,19 +110,13 @@ jobs:
           if [ -f lychee/report.md ]; then
             echo "## Link Check Results" >> $GITHUB_STEP_SUMMARY
             cat lychee/report.md >> $GITHUB_STEP_SUMMARY
-          else
-            echo "## No broken links found!" >> $GITHUB_STEP_SUMMARY
           fi
 
-      - name: Upload Report Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: broken-links-report
-          path: lychee/report.md
+      # --- Part 3: Deploy ---
 
-      - name: Deploy
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs/_build/html
