@@ -67,6 +67,17 @@ def package_info(req_file):
     return python_version, conda_pkgs, pip_pkgs
 
 
+def conda_base_cmd(env_name):
+    conda_bin = get_conda_executable()
+    root_prefix = get_conda_root()
+
+    base_cmd = [conda_bin]
+    print(conda_bin, "micromamba" in conda_bin)
+    if "micromamba" in conda_bin.lower():
+        base_cmd += ["-r", root_prefix]
+    return base_cmd
+
+
 def get_python_path(env_name):
     """
     Ask Conda exactly where the python executable is for the new env.
@@ -74,8 +85,8 @@ def get_python_path(env_name):
     """
     try:
         cmd = "where python" if IS_WIN else "which python"
-        conda_bin = get_conda_executable()
-        result = run_command([conda_bin, "run", "-n", env_name, *cmd.split()])
+        base_cmd = conda_base_cmd(env_name)
+        result = run_command(base_cmd + ["run", "-n", env_name, *cmd.split()])
         return Path(result.stdout.strip().splitlines()[0])
     except subprocess.CalledProcessError:
         controlled_crash(f"Conda created '{env_name}' but it has no python binary.")
@@ -83,19 +94,7 @@ def get_python_path(env_name):
 
 def configure_env(prefix, python_version, req_file, verbose=False):
     env_name = f"{prefix}_{python_version.replace('.', '')}"
-    conda_bin = get_conda_executable()
-    root_prefix = get_conda_root()
-    print(root_prefix)
-
-    base_cmd = [conda_bin]
-    print(conda_bin, "micromamba" in conda_bin)
-    if "micromamba" in conda_bin.lower():
-        base_cmd += ["-r", root_prefix]
-    print(base_cmd)
-
-    print(
-        f"Creating environment '{env_name}' using {conda_bin} with Python {python_version} in {root_prefix}"
-    )
+    base_cmd = conda_base_cmd(env_name)
     run_command(
         [
             *base_cmd,
@@ -117,7 +116,7 @@ def configure_env(prefix, python_version, req_file, verbose=False):
     if conda_pkgs:
         run_command(
             [
-                conda_bin,
+                *base_cmd,
                 "install",
                 "-n",
                 env_name,
@@ -285,10 +284,12 @@ def find_talktorial_folder(txxx):
 def start_talktorial(talktorial_dir: Path, env_name: str):
     """Start the Jupyter Notebook inside the correct conda environment."""
     talktorial = talktorial_dir / TALKTORIAL_FILE
+    base_cmd = conda_base_cmd(env_name)
+
     if talktorial.exists():
         print(f"Starting talktorial {talktorial}")
-        notebook_cmd = f"conda run -n {env_name} jupyter notebook {str(talktorial)}"
-        run_command(notebook_cmd, shell=True)
+        cmd = base_cmd + ["run", "-n", env_name, "jupyter", "notebook", talktorial]
+        run_command(cmd, shell=True)
     else:
         controlled_crash(f"Error: Notebook '{talktorial}' not found.")
 
