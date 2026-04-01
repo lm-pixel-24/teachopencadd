@@ -18,7 +18,6 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
     
-    # Required for the bot to push changes back to the repo
     permissions:
       contents: write
       pages: write
@@ -41,13 +40,10 @@ jobs:
       
       - name: Format Notebooks and Regenerate READMEs
         run: |
-          # Install necessary tools via uv
-          uv pip install nbformat "black[jupyter]"
+          uv pip install --system nbformat "black[jupyter]"
           
-          # Run Black formatter
-          uv run black --ipynb -l 99 teachopencadd/talktorials/T*/talktorial.ipynb
+          uv run --system black --ipynb -l 99 teachopencadd/talktorials/T*/talktorial.ipynb
           
-          # Regenerate READMEs (using the fixed logic)
           for path in teachopencadd/talktorials/T*/talktorial.ipynb; do
             python devtools/regenerate_readmes.py "$path" --output "README.md"
           done
