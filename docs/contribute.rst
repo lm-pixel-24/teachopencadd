@@ -31,9 +31,7 @@ This is a step-by-step guide on how to submit new talktorials.
 
     git checkout -b ab-t099-fingerprints
 
-6. Create ``toc-dev`` environment::
-
-    # Create the environment using conda, see documentation for more details here `<https://docs.conda.io/projects/conda/en/stable/user-guide/tasks/manage-environments.html>`
+6. Create environment using a ``requirements.txt`` file in the talktorial directory.::
 
 7. Make a copy of the following template folder using your talktorial index and short name (example here is ``T099_fingerprints``)::
 

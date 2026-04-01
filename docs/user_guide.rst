@@ -3,7 +3,7 @@ User guide
 
 .. note::
 
-    We are assuming you have a working ``conda`` installation on your computer. 
+    We are assuming you have a working ``conda`` or ``micromamba`` installation on your computer. 
     If this is not the case, please refer to the `official documentation <https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html>`_. 
 
 
@@ -22,13 +22,20 @@ Run Locally
        git clone https://github.com/volkamerlab/teachopencadd.git
        cd teachopencadd
 
-2. **Execute notebooks:**
-   Inside the main directory, run the following command (please ensure you have ``conda`` installed).
+2. **Install teachopencadd**
+   Install the teachopencadd package. You can also use ``uv`` for this step.
 
    .. code-block:: bash
 
-       python main.py -t T001
+       pip install -e .
 
-   Here ``T001`` is the ID referring to the talktorial to execute.
+2. **Execute notebooks:**
+   Inside the main directory, run the following command.
+
+   .. code-block:: bash
+
+       teachopencadd 1
+
+   Here, ``1`` is the ID referring to the talktorial to execute.
 
    It will take a couple of minutes if you're running a particular notebook for the very first time. First, the system will internally create a Conda virtual environment and install all necessary Python packages; you can monitor the progress logs in the terminal. Then, the notebook will launch in your browser.
