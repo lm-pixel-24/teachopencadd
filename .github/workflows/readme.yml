@@ -32,8 +32,7 @@ jobs:
           black --ipynb -l 99 teachopencadd/talktorials/T*/talktorial.ipynb
           
           for path in teachopencadd/talktorials/T*/talktorial.ipynb; do
-            DIR=$(dirname "$path")
-            python devtools/regenerate_readmes.py "$path" --output "$DIR/README.md"
+            python devtools/regenerate_readmes.py "$path" --output "README.md"
           done
 
       - name: Commit and Push
