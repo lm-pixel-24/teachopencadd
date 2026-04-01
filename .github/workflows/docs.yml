@@ -7,8 +7,6 @@ on:
       - "teachopencadd/talktorials/**/talktorial.ipynb"
       - "docs/**"
       - "devtools/regenerate_readmes.py"
-  pull_request:
-    branches: ["master", "dev", "maintenance/.+"]
   schedule:
     - cron: "0 3/336 * * 1"
 
