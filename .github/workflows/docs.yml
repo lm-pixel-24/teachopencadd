@@ -7,6 +7,7 @@ on:
       - "teachopencadd/talktorials/**/talktorial.ipynb"
       - "docs/**"
       - "devtools/regenerate_readmes.py"
+      - ".github/workflows/docs.yml"
   schedule:
     - cron: "0 3/336 * * 1"
 
