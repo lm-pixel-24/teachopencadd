@@ -396,9 +396,7 @@ def main():
         "--force", action="store_true", help="Don't ask for confirmation during cleanup"
     )
     args = parser.parse_args()
-    if args.env_list:
-        show_envs()
-    elif args.cleanup:
+    if args.cleanup:
         cleanup_environments(force=args.force)
     elif args.talktorial:
         ident = int(str(args.talktorial).lstrip("T0").partition("_")[0])
