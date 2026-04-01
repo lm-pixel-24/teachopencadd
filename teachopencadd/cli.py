@@ -12,6 +12,8 @@ BASE_DIR = Path("teachopencadd") / "talktorials"
 REQ_FILE = "requirements.txt"
 TALKTORIAL_FILE = "talktorial.ipynb"
 IS_WIN = "win32" in str(sys.platform.lower())
+ENV_PREFIX = "teachopencadd_"
+PROJECT_URL = "https://projects.volkamerlab.org/teachopencadd"
 
 
 def run_command(command, verbose=True, **kwargs):
@@ -67,7 +69,7 @@ def package_info(req_file):
     return python_version, conda_pkgs, pip_pkgs
 
 
-def conda_base_cmd(env_name):
+def conda_base_cmd():
     conda_bin = get_conda_executable()
     root_prefix = get_conda_root()
 
@@ -85,7 +87,7 @@ def get_python_path(env_name):
     """
     try:
         cmd = "where python" if IS_WIN else "which python"
-        base_cmd = conda_base_cmd(env_name)
+        base_cmd = conda_base_cmd()
         result = run_command(base_cmd + ["run", "-n", env_name, *cmd.split()])
         return Path(result.stdout.strip().splitlines()[0])
     except subprocess.CalledProcessError:
@@ -93,8 +95,8 @@ def get_python_path(env_name):
 
 
 def configure_env(prefix, python_version, req_file, verbose=False):
-    env_name = f"{prefix}_{python_version.replace('.', '')}"
-    base_cmd = conda_base_cmd(env_name)
+    env_name = f"{ENV_PREFIX}_{prefix}_{python_version.replace('.', '')}"
+    base_cmd = conda_base_cmd()
     run_command(
         [
             *base_cmd,
@@ -237,21 +239,6 @@ def get_conda_executable():
     controlled_crash("Could not find 'conda' or 'micromamba' executable in PATH.")
 
 
-def conda_env_list():
-    """
-    List all conda environments.
-    returns:
-        list: List of conda environment names.
-    """
-    conda_bin = get_conda_executable()
-    result = run_command(
-        [conda_bin, "env", "list"],
-    )
-
-    envs = result.stdout.splitlines()
-    return [line.split()[0] for line in envs if line and not line.startswith("#")]
-
-
 def set_nb_kernelspec(talktorial_dir: Path, env_name: str):
     """
     Set the kernel spec of the notebook to match the conda env.
@@ -284,7 +271,7 @@ def find_talktorial_folder(txxx):
 def start_talktorial(talktorial_dir: Path, env_name: str):
     """Start the Jupyter Notebook inside the correct conda environment."""
     talktorial = talktorial_dir / TALKTORIAL_FILE
-    base_cmd = conda_base_cmd(env_name)
+    base_cmd = conda_base_cmd()
 
     if talktorial.exists():
         print(f"Starting talktorial {talktorial}")
@@ -326,22 +313,98 @@ def run(txxx, test_mode=False):
         start_talktorial(talktorial_dir, env_name)
 
 
-def parse_talktorial(ident):
-    ident = int(str(ident).lstrip("T0").partition("_")[0])
-    return "T{0:03}".format(ident)
+def teachopencadd_env_list():
+    return [e for e in conda_env_list() if re.match(r"T\d{3}_", e)]
+
+
+def conda_env_list():
+    """
+    Returns a list of tuples: (name_or_none, full_path)
+    """
+    base_cmd = conda_base_cmd()
+    result = run_command(base_cmd + ["env", "list"], verbose=False)
+
+    envs = []
+    lines = [
+        line.strip()
+        for line in result.stdout.splitlines()
+        if line.strip() and not line.startswith(("#", "Name", "---"))
+    ]
+
+    for line in lines:
+        parts = line.split()
+        if parts[0].startswith("/") or len(parts) > 1 and ":" in parts[0]:
+            envs.append((None, parts[0]))
+        else:
+            envs.append((parts[0], parts[-1]))
+    return envs
+
+
+def cleanup_environments(force=False):
+    """Removes all talktorial-specific environments by path or name."""
+    all_envs = conda_env_list()
+    to_delete = []
+
+    pattern = re.compile(r"T\d{3}_")
+
+    for name, path in all_envs:
+        identifier = name if name else Path(path).name
+        if pattern.match(identifier):
+            to_delete.append((name, path))
+
+    if not to_delete:
+        print("No talktorial environments found to clean.")
+        return
+
+    print(f"Found {len(to_delete)} environments to delete:")
+    for name, path in to_delete:
+        print(f" - {name if name else '<unnamed>'} ({path})")
+
+    if not force:
+        confirm = input("\nDelete these environments? [y/N]: ")
+        if confirm.lower() != "y":
+            return
+
+    base_cmd = conda_base_cmd()
+    for name, path in to_delete:
+        flag = "-n" if name else "-p"
+        target = name if name else path
+        print(f"Removing {target}...")
+        cmd = base_cmd + ["env", "remove", flag, target]
+        if force:
+            cmd.append("--yes")
+        subprocess.run(cmd)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="CLI.")
+    parser = argparse.ArgumentParser(
+        description="TeachOpenCADD: A teaching platform for computer-aided drug design (CADD) using open source packages and data.",
+        epilog=f"Visit '{PROJECT_URL}' for more information.",
+    )
     parser.add_argument(
         "talktorial",
+        nargs="?",
         help="Taltorial to run, e.g., T001 or 1",
     )
     parser.add_argument(
-        "--test", action="store_true", help="Test the talktorial using pytest."
+        "--test", action="store_true", help="Test the talktorial using pytest"
+    )
+    parser.add_argument(
+        "--cleanup", action="store_true", help="Remove all talktorial (TXXX_*) envs"
+    )
+    parser.add_argument(
+        "--force", action="store_true", help="Don't ask for confirmation during cleanup"
     )
     args = parser.parse_args()
-    run(parse_talktorial(args.talktorial), args.test)
+    if args.env_list:
+        show_envs()
+    elif args.cleanup:
+        cleanup_environments(force=args.force)
+    elif args.talktorial:
+        ident = int(str(args.talktorial).lstrip("T0").partition("_")[0])
+        run("T{0:03}".format(ident), args.test)
+    else:
+        parser.print_help()
 
 
 if __name__ == "__main__":
