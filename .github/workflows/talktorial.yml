@@ -1,5 +1,4 @@
-name: Talktorial CLI Cross-Platform
-
+name: Test talktorials
 on:
   push:
     branches: [sepenv-ci]

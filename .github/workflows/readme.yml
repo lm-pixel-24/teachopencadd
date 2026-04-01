@@ -1,4 +1,4 @@
-name: Format and Regenerate README
+name: Format code and regenerate READMEs
 
 on:
   push:
