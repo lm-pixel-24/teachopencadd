@@ -33,10 +33,12 @@ API_BASE = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/"
 RAW_BASE = f"https://raw.githubusercontent.com/{REPO_OWNER}/{REPO_NAME}"
 API_ROOT_PATH = "teachopencadd/talktorials/"
 EXCLUDE_FILES = [".gitignore"]
+ARROW = "->" if IS_WIN else "→"
+CROSS = "X" if IS_WIN else "✖"
 
 
 def print_err(message):
-    console.print(f"[bold red]✖ Error:[/bold red] {message}")
+    console.print(f"[bold red]{CROSS} Error:[/bold red] {message}")
 
 
 def print_step(message):
@@ -44,11 +46,11 @@ def print_step(message):
 
 
 def print_status(message):
-    console.print(f"[bold blue]→[/bold blue] {message}")
+    console.print(f"[bold blue]{ARROW}[/bold blue] {message}")
 
 
 def print_warn(message):
-    console.print(f"[bold yellow]→[/bold yellow] {message}")
+    console.print(f"[bold yellow]{ARROW}[/bold yellow] {message}")
 
 
 def run_command(command, **kwargs):
