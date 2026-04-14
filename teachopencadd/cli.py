@@ -412,7 +412,7 @@ def cleanup(force=False):
         except Exception as e:
             print_err(f"Error deleting folder: {e}")
 
-    mamba_cache = UV_ENV_ROOT / ".mamba_cache"
+    mamba_cache = UV_ENV_ROOT / "mamba_cache"
     if mamba_cache.exists():
         if force or Confirm("Clear Mamba package cache?"):
             print_status("Clearing cache...")
