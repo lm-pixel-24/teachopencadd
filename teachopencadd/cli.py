@@ -169,7 +169,7 @@ def configure_env(t_id, req_file):
         )
         conda = get_conda_bin()
         mamba_root = UV_ENV_ROOT / ".mamba_cache"
-        mamba_root.mkdir(exist_ok=True)
+        mamba_root.mkdir(exist_ok=True, parents=True)
 
         env_vars = {**os.environ, "MAMBA_ROOT_PREFIX": str(mamba_root)}
 
@@ -423,7 +423,7 @@ def test_talktorial(talktorial_dir: Path, py_exe: Path, bin_dir: Path):
         print(f"Error: Could not find {talktorial} for testing.")
         sys.exit(1)
 
-    print(f"\n🧪 Testing talktorial {talktorial}...")
+    print_step(f"Testing talktorial {talktorial}...")
 
     install_cmd = ["uv", "pip", "install", "--python", str(py_exe), "pytest", "nbval"]
     run_command(install_cmd)
@@ -437,7 +437,7 @@ def test_talktorial(talktorial_dir: Path, py_exe: Path, bin_dir: Path):
             f"{lib_dir}{os.pathsep}{test_env.get('LD_LIBRARY_PATH', '')}"
         )
 
-    print("Running pytest with nbval...\n")
+    print_status("Running pytest with nbval...\n")
     run_command(
         [str(py_exe), "-m", "pytest", "--nbval-lax", "--current-env", str(talktorial)],
         env=test_env,
