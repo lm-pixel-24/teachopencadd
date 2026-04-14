@@ -2,4 +2,13 @@ include LICENSE
 include MANIFEST.in
 
 graft teachopencadd
+exclude teachopencadd/talktorials
 global-exclude *.py[cod] __pycache__ *.so .ipynb_checkpoints
+
+recursive-exclude teachopencadd/talktorials *
+
+prune docs
+prune tests
+prune devtools
+
+global-exclude *.py[cod] __pycache__ *.so *.ipynb_checkpoints/*

@@ -1,7 +1,3 @@
-"""
-opencadd
-A Python library for structural cheminformatics
-"""
 import sys
 from setuptools import setup, find_packages
 
@@ -27,7 +23,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     use_scm_version=True,
-    license="MIT",
+    # license="MIT",
     # Which Python importable modules should be included when your package is installed
     # Handled automatically by setuptools. Use 'exclude' to prevent some specific
     # subpackage(s) from being added, if needed
