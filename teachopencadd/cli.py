@@ -8,7 +8,17 @@ import argparse
 import nbformat
 import subprocess
 import requests
+import logging
 from pathlib import Path
+
+from rich import print
+from rich.logging import RichHandler
+from rich.panel import Panel
+from rich.prompt import Confirm
+from rich.progress import track
+from rich.console import Console
+
+console = Console()
 
 ENV_PREFIX = "teachopencadd"
 BASE_DIR = Path("teachopencadd") / "talktorials"
@@ -24,30 +34,42 @@ RAW_BASE = f"https://raw.githubusercontent.com/{REPO_OWNER}/{REPO_NAME}"
 API_ROOT_PATH = "teachopencadd/talktorials/"
 EXCLUDE_FILES = [".gitignore"]
 
+def print_err(message):
+    console.print(f"[bold red]✖ Error:[/bold red] {message}")
+
+def print_status(message):
+    console.print(f"[bold blue]→[/bold blue] {message}")
+
+def print_warn(message):
+    console.print(f"[bold yellow]→[/bold yellow] {message}")
 
 def run_command(command, verbose=True, **kwargs):
     """Wrapper for subprocess with better error reporting."""
     kwargs.setdefault("capture_output", True)
     kwargs.setdefault("text", True)
 
+    cmd_str = " ".join(map(str, command))
+
+    print_status(f"Run '{cmd_str}'")
+
     try:
         result = subprocess.run(command, shell=IS_WIN, **kwargs)
-    except FileNotFoundError as e:
-        print(f"Error: Could not find command '{command[0]}'. Is it installed?")
+    except FileNotFoundError:
+        print_err(f"Command not found: {command[0]}")
         sys.exit(1)
 
     if result.returncode != 0:
-        print("\n" + "!" * 60)
-        print(f"Command Failed: {' '.join(map(str, command))}")
-        print("STDOUT:", result.stdout)
-        print("STDERR:", result.stderr)
-        print("!" * 60)
+        console.print(Panel(cmd_str, title="[red]Command Failed[/red]", border_style="red"))
+        if result.stdout:
+            console.print(Panel(result.stdout, title="stdout", border_style="yellow"))
+        if result.stderr:
+            console.print(Panel(result.stderr, title="stderr", border_style="red"))
         sys.exit(result.returncode)
 
     if verbose and result.stdout.strip():
-        print(result.stdout)
-    return result
+        console.print(Panel(result.stdout, title=cmd_str, border_style="green"))
 
+    return result
 
 def get_conda_bin():
     """Finds micromamba or conda executable."""
@@ -55,7 +77,7 @@ def get_conda_bin():
         path = shutil.which(bin_name)
         if path:
             return path
-    print("Error: Could not find micromamba/mamba/conda. Please install one.")
+    print_err("Could not find micromamba/mamba/conda. Please install one.")
     sys.exit(1)
 
 
@@ -122,7 +144,7 @@ def configure_env(t_id, req_file):
     is_conda = len(conda_pkgs) > 0
 
     if not is_conda:
-        print(f"🚀 [UV Mode] No conda dependencies. Building venv for {t_id}...")
+        print_status(f"[Pip/UV Mode] No conda dependencies. Building venv for {t_id}...")
         if not env_path.exists():
             UV_ENV_ROOT.mkdir(parents=True, exist_ok=True)
             run_command(["uv", "venv", str(env_path), "--python", py_ver])
@@ -131,7 +153,7 @@ def configure_env(t_id, req_file):
         if pip_pkgs:
             run_command(["uv", "pip", "install", "--python", str(py_exe), *pip_pkgs])
     else:
-        print(f"📦 [Conda Mode] Conda dependencies found. Using solver for {t_id}...")
+        print_status(f"[Conda Mode] Conda dependencies found. Using solver for {t_id}...")
         conda = get_conda_bin()
         mamba_root = UV_ENV_ROOT / ".mamba_cache"
         mamba_root.mkdir(exist_ok=True)
@@ -178,7 +200,7 @@ def setup_jupyter(env_name, is_conda, talktorial_path):
     """Ensures ipykernel is installed and notebook metadata is updated."""
     py_exe, _ = get_env_info(env_name, is_conda)
 
-    print(f"Registering Jupyter kernel for {env_name}...")
+    print_status(f"Registering Jupyter kernel for {env_name}...")
     run_command(["uv", "pip", "install", "--python", str(py_exe), "ipykernel"])
     run_command(
         [
@@ -247,7 +269,7 @@ def fetch_folder_contents(api_url, branch, exclude_files=None):
             dir_api_url = item.get("url")
             file_list.extend(fetch_folder_contents(dir_api_url, branch, exclude_files))
         else:
-            print(f"Skipping unsupported type '{item_type}' at {path}")
+            print_status(f"Skipping unsupported type '{item_type}' at {path}")
     return file_list
 
 
@@ -257,18 +279,18 @@ def download_file(raw_url, local_path, timeout=30):
     try:
         r = requests.get(raw_url, timeout=timeout)
     except requests.RequestException as e:
-        print(f"Network error downloading {raw_url}: {e}")
+        print_warn(f"Network error downloading {raw_url}: {e}")
         return False
     if r.status_code == 200:
         with open(local_path, "wb") as fh:
             fh.write(r.content)
         return True
     else:
-        print(f"Failed to download {raw_url} (HTTP {r.status_code})")
+        print_err(f"Failed to download {raw_url} (HTTP {r.status_code})")
         return False
 
 
-def fetch_talktorial(t_id):
+def fetch_talktorial(t_id, data_only=False):
     """
     Main entry point for the runner. Finds the full folder name for t_id,
     downloads it if missing, and returns the local Path object.
@@ -280,7 +302,7 @@ def fetch_talktorial(t_id):
     if existing:
         return existing[0]
 
-    print(f"🔍 {t_id} not found locally. Querying GitHub API...")
+    print_status(f"{t_id} not found locally. Querying GitHub API...")
 
     # 2. Query the root talktorials directory to find the exact folder name
     root_url = API_BASE + API_ROOT_PATH.rstrip("/")
@@ -302,11 +324,11 @@ def fetch_talktorial(t_id):
     output_dir = target_folder_name
     os.makedirs(output_dir, exist_ok=True)
 
-    print(f"Fetching file list for '{target_folder_name}' from branch '{BRANCH}'...")
+    print_status(f"Fetching file list for '{target_folder_name}' from branch '{BRANCH}'...")
     all_files = fetch_folder_contents(
         api_root_with_path, BRANCH, exclude_files=EXCLUDE_FILES
     )
-    print(f"Found {len(all_files)} files to download.\n")
+    print_status(f"Found {len(all_files)} files to download.\n")
 
     for path, raw_url in all_files:
         # Calculate local path relative to the downloaded folder
@@ -320,10 +342,10 @@ def fetch_talktorial(t_id):
             except OSError:
                 pass
 
-        print(f"Downloading: {rel_local}")
+        print_status(f"Downloading: {rel_local}")
         download_file(raw_url, local_path)
 
-    print(f"✅ Done. Files saved to: ./{output_dir}")
+    print_status(f"Done. Files saved to: ./{output_dir}")
     return Path(output_dir)
 
 
@@ -333,50 +355,47 @@ def cleanup(force=False):
     Defaults to interactive mode unless force=True.
     """
     if not UV_ENV_ROOT.exists():
-        print(f"No environment directory found at {UV_ENV_ROOT}.")
+        print_status(f"No environment directory found at {UV_ENV_ROOT}.")
         return
 
     pattern = re.compile(rf"^{ENV_PREFIX}_T\d{{3}}_")
     envs = [d for d in UV_ENV_ROOT.iterdir() if d.is_dir() and pattern.match(d.name)]
 
     if not envs:
-        print("No managed environments found.")
+        print_status("No managed environments found.")
         return
 
-    print(f"Found {len(envs)} environments in {UV_ENV_ROOT}.\n")
+    print_status(f"Found {len(envs)} environments in {UV_ENV_ROOT}.\n")
 
     for env_path in envs:
         env_name = env_path.name
 
         if not force:
-            choice = input(f"Remove environment '{env_name}'? [y/N]: ").lower()
-            if choice != "y":
+            if not Confirm.ask(f"Remove environment '{env_name}'?"):
                 continue
 
-        print(f"  - Unregistering kernel: {env_name}...")
+        print_status(f"Unregistering kernel: {env_name}...")
         try:
-            subprocess.run(
-                ["jupyter", "kernelspec", "uninstall", env_name.lower(), "-y"],
-                capture_output=False,
-                text=True,
-                check=False,
+            run_command(
+                ["jupyter", "kernelspec", "uninstall", env_name.lower(), "-y"]
             )
         except Exception as e:
-            print(f"    ! Note: Could not unregister kernel (may not exist): {e}")
+            print_warn(f"Could not unregister kernel (may not exist): {e}")
 
-        print(f"  - Deleting folder: {env_path}...")
+        print_status(f"Deleting folder: {env_path}...")
         try:
             shutil.rmtree(env_path)
         except Exception as e:
-            print(f"    ! Error deleting folder: {e}")
+            print_err(f"Error deleting folder: {e}")
 
     mamba_cache = UV_ENV_ROOT / ".mamba_cache"
     if mamba_cache.exists():
-        if force or input("\nClear Mamba package cache? [y/N]: ").lower() == "y":
-            print("Clearing cache...")
+        if force or Confirm("Clear Mamba package cache?"):
+            print_status("Clearing cache...")
             shutil.rmtree(mamba_cache)
 
-    print("\nCleanup complete.")
+    print_status("Cleanup complete.")
+
 
 
 def main():
@@ -401,8 +420,8 @@ def main():
 
     matches = list(BASE_DIR.glob(f"{t_id}_*"))
     if not matches:
-        print(
-            f"    ! Warning: Could not find folder for {t_id} in {BASE_DIR}. Fetching from Github..."
+        print_warn(
+            f"Could not find folder for {t_id} in {BASE_DIR}. Fetching from Github..."
         )
         t_dir = fetch_talktorial(t_id)
     else:
@@ -416,7 +435,7 @@ def main():
     py_exe, bin_dir = get_env_info(env_name, is_conda)
     jupyter_bin = bin_dir / ("jupyter.exe" if IS_WIN else "jupyter")
     if not jupyter_bin.exists():
-        print(f"Error: Jupyter binary not found at {jupyter_bin}")
+        print_err(f"Jupyter binary not found at {jupyter_bin}")
         sys.exit(1)
 
     env_vars = os.environ.copy()
@@ -427,7 +446,7 @@ def main():
         env_vars["CONDA_PREFIX"] = str(bin_dir.parent)
         env_vars["MAMBA_ROOT_PREFIX"] = str(UV_ENV_ROOT / ".mamba_cache")
 
-    print(f"\nStarting {t_id}...")
+    print_status(f"Starting {t_id}...")
 
     run_command(
         [str(jupyter_bin), "notebook", str(nb_file)], env=env_vars, capture_output=False
