@@ -76,7 +76,8 @@ def run_command(command, **kwargs):
             console.print(Panel(result.stdout, title="stdout", border_style="yellow"))
         if result.stderr:
             console.print(Panel(result.stderr, title="stderr", border_style="red"))
-        sys.exit(result.returncode)
+        if kwargs.get("check", False):
+            sys.exit(result.returncode)
 
     return result
 
@@ -399,7 +400,9 @@ def cleanup(force=False):
 
         print_status(f"Unregistering kernel: {env_name}...")
         try:
-            run_command(["jupyter", "kernelspec", "uninstall", env_name.lower(), "-y"])
+            run_command(
+                ["jupyter", "kernelspec", "uninstall", env_name.lower(), "-y"],
+            )
         except Exception as e:
             print_warn(f"Could not unregister kernel (may not exist): {e}")
 
