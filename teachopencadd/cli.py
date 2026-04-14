@@ -3,157 +3,178 @@ import shutil
 import re
 import sys
 import glob
+import json
 import argparse
 import nbformat
 import subprocess
 from pathlib import Path
 
+ENV_PREFIX = "teachopencadd"
 BASE_DIR = Path("teachopencadd") / "talktorials"
+UV_ENV_ROOT = Path.home() / ".teachopencadd_envs"
 REQ_FILE = "requirements.txt"
 TALKTORIAL_FILE = "talktorial.ipynb"
-IS_WIN = "win32" in str(sys.platform.lower())
-ENV_PREFIX = "teachopencadd_"
-PROJECT_URL = "https://projects.volkamerlab.org/teachopencadd"
+IS_WIN = sys.platform.startswith("win")
 
 
 def run_command(command, verbose=True, **kwargs):
-    kwargs |= dict(shell=False, capture_output=True, text=True)
-    result = subprocess.run(command, **kwargs)
+    """Wrapper for subprocess with better error reporting."""
+    kwargs.setdefault("capture_output", True)
+    kwargs.setdefault("text", True)
+
+    try:
+        result = subprocess.run(command, shell=IS_WIN, **kwargs)
+    except FileNotFoundError as e:
+        print(f"Error: Could not find command '{command[0]}'. Is it installed?")
+        sys.exit(1)
+
     if result.returncode != 0:
-        print("\n" + "=" * 50)
-        print(f"!!! Command {' '.join(command)} failed !!!")
-        print("=" * 50)
-        print("STDOUT:\n", result.stdout)
-        print("-" * 20)
-        print("STDERR:\n", result.stderr)
-        print("=" * 50)
+        print("\n" + "!" * 60)
+        print(f"Command Failed: {' '.join(map(str, command))}")
+        print("STDOUT:", result.stdout)
+        print("STDERR:", result.stderr)
+        print("!" * 60)
         sys.exit(result.returncode)
 
-    if verbose:
+    if verbose and result.stdout.strip():
         print(result.stdout)
     return result
 
 
-def package_info(req_file):
-    python_version = "3.11"  # Default fallback if not found
-    conda_pkgs = []
-    pip_pkgs = []
+def get_conda_bin():
+    """Finds micromamba or conda executable."""
+    for bin_name in ["micromamba", "mamba", "conda"]:
+        path = shutil.which(bin_name)
+        if path:
+            return path
+    print("Error: Could not find micromamba/mamba/conda. Please install one.")
+    sys.exit(1)
+
+
+def parse_requirements(req_file):
+    """
+    Parses talktorial requirements.
+    Detects python version and splits packages into conda vs pip.
+    Example line: 'rdkit # conda'
+    """
+    py_version = "3.11"
+    conda_pkgs, pip_pkgs = [], []
 
     py_pattern = re.compile(r"#python\s*[=:]\s*([\d\.]+)", re.IGNORECASE)
-    conda_tag_pattern = re.compile(r"^([^#]+)\s*#\s*conda\b", re.IGNORECASE)
+    conda_tag = re.compile(r"^([^#]+)\s*#\s*conda\b", re.IGNORECASE)
 
-    with open(req_file, "r", encoding="utf-8") as f:
+    if not Path(req_file).exists():
+        return py_version, [], []
+
+    with open(req_file, "r") as f:
         for line in f:
             line = line.strip()
             if not line:
                 continue
 
-            py_match = py_pattern.search(line)
-            if py_match:
-                python_version = py_match.group(1)
-                if line.lower().startswith("python") or line.startswith("#"):
-                    if not conda_tag_pattern.search(line):
-                        continue
+            if match := py_pattern.search(line):
+                py_version = match.group(1)
+                continue
 
             if line.startswith("#"):
                 continue
 
-            conda_match = conda_tag_pattern.match(line)
-            if conda_match:
-                conda_pkgs.append(conda_match.group(1).strip())
+            if match := conda_tag.match(line):
+                conda_pkgs.append(match.group(1).strip())
             else:
-                pkg_name = line.split("#")[0].strip()
-                if pkg_name:
-                    pip_pkgs.append(pkg_name)
+                pkg = line.split("#")[0].strip()
+                if pkg:
+                    pip_pkgs.append(pkg)
 
-    return python_version, conda_pkgs, pip_pkgs
-
-
-def conda_base_cmd():
-    conda_bin = get_conda_executable()
-    root_prefix = get_conda_root()
-
-    base_cmd = [conda_bin]
-    print(conda_bin, "micromamba" in conda_bin)
-    if "micromamba" in conda_bin.lower():
-        base_cmd += ["-r", root_prefix]
-    return base_cmd
+    return py_version, conda_pkgs, pip_pkgs
 
 
-def get_python_path(env_name):
-    """
-    Ask Conda exactly where the python executable is for the new env.
-    This works regardless of OS or where Conda is installed.
-    """
-    try:
-        cmd = "where python" if IS_WIN else "which python"
-        base_cmd = conda_base_cmd()
-        result = run_command(base_cmd + ["run", "-n", env_name, *cmd.split()])
-        return Path(result.stdout.strip().splitlines()[0])
-    except subprocess.CalledProcessError:
-        controlled_crash(f"Conda created '{env_name}' but it has no python binary.")
+def get_env_info(env_name, is_conda):
+    """Returns (python_exe_path, bin_dir_path)."""
+    env_path = UV_ENV_ROOT / env_name
+
+    if IS_WIN:
+        py_exe = (
+            env_path / "python.exe" if is_conda else env_path / "Scripts/python.exe"
+        )
+        bin_dir = py_exe.parent
+    else:
+        py_exe = env_path / "bin/python"
+        bin_dir = env_path / "bin"
+
+    return py_exe, bin_dir
 
 
-def configure_env(prefix, python_version, req_file, verbose=False):
-    env_name = f"{ENV_PREFIX}_{prefix}_{python_version.replace('.', '')}"
-    base_cmd = conda_base_cmd()
-    run_command(
-        [
-            *base_cmd,
-            "create",
-            "-n",
-            env_name,
-            f"python={python_version}",
-            "-c",
-            "conda-forge",
-            "--yes",
-        ],
-    )
+def configure_env(t_id, req_file):
+    """Creates the environment (UV or Conda) and returns (env_name, is_conda)."""
+    py_ver, conda_pkgs, pip_pkgs = parse_requirements(req_file)
+    env_name = f"{ENV_PREFIX}_{t_id}_py{py_ver.replace('.', '')}"
+    env_path = UV_ENV_ROOT / env_name
 
-    py_vrs, conda_pkgs, pip_pkgs = package_info(req_file)
+    is_conda = len(conda_pkgs) > 0
 
-    python_exe = str(get_python_path(env_name))
-    print(f"Found dynamic python at: {python_exe}")
+    if not is_conda:
+        print(f"🚀 [UV Mode] No conda dependencies. Building venv for {t_id}...")
+        if not env_path.exists():
+            UV_ENV_ROOT.mkdir(parents=True, exist_ok=True)
+            run_command(["uv", "venv", str(env_path), "--python", py_ver])
 
-    if conda_pkgs:
+        py_exe, _ = get_env_info(env_name, is_conda=False)
+        if pip_pkgs:
+            run_command(["uv", "pip", "install", "--python", str(py_exe), *pip_pkgs])
+    else:
+        print(f"📦 [Conda Mode] Conda dependencies found. Using solver for {t_id}...")
+        conda = get_conda_bin()
+        mamba_root = UV_ENV_ROOT / ".mamba_cache"
+        mamba_root.mkdir(exist_ok=True)
+
+        env_vars = {**os.environ, "MAMBA_ROOT_PREFIX": str(mamba_root)}
+
         run_command(
             [
-                *base_cmd,
-                "install",
-                "-n",
-                env_name,
+                conda,
+                "create",
+                "-p",
+                str(env_path),
+                f"python={py_ver}",
                 "-c",
                 "conda-forge",
-                *conda_pkgs,
                 "--yes",
             ],
+            env=env_vars,
         )
 
-    if pip_pkgs:
-        print(f"Using uv to install dependencies into {env_name}...")
-        run_command(
-            ["uv", "pip", "install", "--python", python_exe, *pip_pkgs],
-        )
+        if conda_pkgs:
+            run_command(
+                [
+                    conda,
+                    "install",
+                    "-p",
+                    str(env_path),
+                    "-c",
+                    "conda-forge",
+                    *conda_pkgs,
+                    "--yes",
+                ],
+                env=env_vars,
+            )
 
-    return env_name
+        py_exe, _ = get_env_info(env_name, is_conda=True)
+        if pip_pkgs:
+            run_command(["uv", "pip", "install", "--python", str(py_exe), *pip_pkgs])
+
+    return env_name, is_conda
 
 
-def set_ipykernel(env_name):
-    print(f"Setting ipykernel for '{env_name}'...")
-    python_exe = str(get_python_path(env_name))
-    use_uv = shutil.which("uv") is not None
+def setup_jupyter(env_name, is_conda, talktorial_path):
+    """Ensures ipykernel is installed and notebook metadata is updated."""
+    py_exe, _ = get_env_info(env_name, is_conda)
 
-    install_cmd = (
-        ["uv", "pip", "install", "--python", python_exe, "ipykernel"]
-        if use_uv
-        else [python_exe, "-m", "pip", "install", "ipykernel"]
-    )
-
-    run_command(install_cmd)
-
+    print(f"Registering Jupyter kernel for {env_name}...")
+    run_command(["uv", "pip", "install", "--python", str(py_exe), "ipykernel"])
     run_command(
         [
-            python_exe,
+            str(py_exe),
             "-m",
             "ipykernel",
             "install",
@@ -161,248 +182,122 @@ def set_ipykernel(env_name):
             "--name",
             env_name,
             "--display-name",
-            env_name,
-        ],
+            f"TeachOpenCADD: {env_name}",
+        ]
     )
 
-
-def test_talktorial(talktorial_dir: Path, env_name: str):
-    talktorial = talktorial_dir / TALKTORIAL_FILE
-    if talktorial.exists():
-        print(f"Testing talktorial {talktorial}")
-        python_exe = str(get_python_path(env_name))
-        use_uv = shutil.which("uv") is not None
-
-        install_cmd = (
-            ["uv", "pip", "install", "--python", python_exe, "pytest", "nbval"]
-            if use_uv
-            else [python_exe, "-m", "pip", "install", "pytest", "nbval"]
-        )
-        run_command(install_cmd, check=True, shell=IS_WIN)
-
-        bin_dir = str(Path(python_exe).parent)
-        test_env = os.environ.copy()
-        test_env["PATH"] = f"{bin_dir}{os.pathsep}{test_env.get('PATH', '')}"
-
-        if not IS_WIN:
-            lib_dir = str(Path(bin_dir).parent / "lib")
-            test_env["LD_LIBRARY_PATH"] = (
-                f"{lib_dir}{os.pathsep}{test_env.get('LD_LIBRARY_PATH', '')}"
-            )
-
-        run_command(
-            [python_exe, "-m", "pytest", "--nbval-lax", str(talktorial)],
-            env=test_env,
-        )
+    nb = nbformat.read(talktorial_path, as_version=4)
+    nb.metadata.kernelspec = {
+        "name": env_name,
+        "display_name": f"TeachOpenCADD: {env_name}",
+        "language": "python",
+    }
+    nbformat.write(nb, talktorial_path)
 
 
-def get_conda_root():
-    """Finds the path to the conda/mamba binary and the root prefix."""
-    conda_bin = get_conda_executable()
-
-    result = subprocess.run(
-        [conda_bin, "info", "--json"], capture_output=True, text=True, shell=IS_WIN
-    )
-    import json
-
-    data = json.loads(result.stdout)
-    root_prefix = data.get("root_prefix") or data.get("base environment")
-
-    if root_prefix == "/" or root_prefix is None:
-        root_prefix = os.path.expanduser("./micromamba")
-        if not os.path.exists(root_prefix):
-            root_prefix = os.path.expanduser("./miniconda3")
-
-    return root_prefix
-
-
-def get_conda_executable():
-    """Finds the actual path to conda or micromamba."""
-    mamba = shutil.which("micromamba")
-    if mamba:
-        return mamba
-
-    conda = shutil.which("conda")
-    if conda:
-        return conda
-
-    possible_paths = [
-        "/usr/local/bin/micromamba",
-        "/Users/runner/micromamba/bin/micromamba",
-        "/home/runner/micromamba/bin/micromamba",
-        "C:\\Scripts\\micromamba.exe",
-    ]
-    for p in possible_paths:
-        if os.path.exists(p):
-            return p
-
-    controlled_crash("Could not find 'conda' or 'micromamba' executable in PATH.")
-
-
-def set_nb_kernelspec(talktorial_dir: Path, env_name: str):
+def cleanup(force=False):
     """
-    Set the kernel spec of the notebook to match the conda env.
+    Removes managed environments and unregisters their Jupyter kernels.
+    Defaults to interactive mode unless force=True.
     """
-    nb_path = talktorial_dir / TALKTORIAL_FILE
-    if nb_path.exists():
-        print(f"Set kernel spec for {nb_path} to {env_name}")
-        nb = nbformat.read(nb_path, as_version=4)
-        nb.metadata.kernelspec = {
-            "name": env_name.lower(),
-            "display_name": env_name,
-            "language": "python",
-        }
-        nbformat.write(nb, nb_path)
-    else:
-        controlled_crash(f"Error: Notebook '{nb_path}' not found.")
-
-
-def find_talktorial_folder(txxx):
-    search_pattern = BASE_DIR / f"{txxx}_*"
-    matches = glob.glob(str(search_pattern))
-    if not matches:
-        controlled_crash(
-            f"No folder found for '{txxx}_*' \
-                        in '{BASE_DIR}'."
-        )
-    return Path(matches[0])
-
-
-def start_talktorial(talktorial_dir: Path, env_name: str):
-    """Start the Jupyter Notebook inside the correct conda environment."""
-    talktorial = talktorial_dir / TALKTORIAL_FILE
-    base_cmd = conda_base_cmd()
-
-    if talktorial.exists():
-        print(f"Starting talktorial {talktorial}")
-        cmd = base_cmd + ["run", "-n", env_name, "jupyter", "notebook", talktorial]
-        run_command(cmd, shell=True)
-    else:
-        controlled_crash(f"Error: Notebook '{talktorial}' not found.")
-
-
-def controlled_crash(reason, code=1):
-    """Print an error message and exit."""
-    print("Error: " + reason, file=sys.stderr)
-    sys.exit(code)
-
-
-def run(txxx, test_mode=False):
-    talktorial_dir = find_talktorial_folder(txxx)
-    print(f"Found talktorial folder: \n{talktorial_dir}")
-    req_path = talktorial_dir / REQ_FILE
-    req_path = str(req_path)  # convert posixpath to str
-    if not os.path.exists(req_path):
-        controlled_crash(
-            f"Requirements file '{REQ_FILE}' \
-                            not found in {talktorial_dir}."
-        )
-    python_version, conda_pkgs, pip_pkgs = package_info(req_path)
-    print(f"Python version: {python_version}")
-    print(f"Pip package list: \n{pip_pkgs}")
-    print(f"Conda package list: \n{conda_pkgs}")
-
-    env_name = configure_env(txxx, python_version, req_path, verbose=test_mode)
-    print(f"Configured environment: {env_name}")
-    set_ipykernel(env_name)
-    set_nb_kernelspec(talktorial_dir, env_name)
-
-    if test_mode:
-        test_talktorial(talktorial_dir, env_name)
-    else:
-        start_talktorial(talktorial_dir, env_name)
-
-
-def teachopencadd_env_list():
-    return [e for e in conda_env_list() if re.match(r"T\d{3}_", e)]
-
-
-def conda_env_list():
-    """
-    Returns a list of tuples: (name_or_none, full_path)
-    """
-    base_cmd = conda_base_cmd()
-    result = run_command(base_cmd + ["env", "list"], verbose=False)
-
-    envs = []
-    lines = [
-        line.strip()
-        for line in result.stdout.splitlines()
-        if line.strip() and not line.startswith(("#", "Name", "---"))
-    ]
-
-    for line in lines:
-        parts = line.split()
-        if parts[0].startswith("/") or len(parts) > 1 and ":" in parts[0]:
-            envs.append((None, parts[0]))
-        else:
-            envs.append((parts[0], parts[-1]))
-    return envs
-
-
-def cleanup_environments(force=False):
-    """Removes all talktorial-specific environments by path or name."""
-    all_envs = conda_env_list()
-    to_delete = []
-
-    pattern = re.compile(r"T\d{3}_")
-
-    for name, path in all_envs:
-        identifier = name if name else Path(path).name
-        if pattern.match(identifier):
-            to_delete.append((name, path))
-
-    if not to_delete:
-        print("No talktorial environments found to clean.")
+    if not UV_ENV_ROOT.exists():
+        print(f"No environment directory found at {UV_ENV_ROOT}.")
         return
 
-    print(f"Found {len(to_delete)} environments to delete:")
-    for name, path in to_delete:
-        print(f" - {name if name else '<unnamed>'} ({path})")
+    pattern = re.compile(rf"^{ENV_PREFIX}_T\d{{3}}_")
+    envs = [d for d in UV_ENV_ROOT.iterdir() if d.is_dir() and pattern.match(d.name)]
 
-    if not force:
-        confirm = input("\nDelete these environments? [y/N]: ")
-        if confirm.lower() != "y":
-            return
+    if not envs:
+        print("No managed environments found.")
+        return
 
-    base_cmd = conda_base_cmd()
-    for name, path in to_delete:
-        flag = "-n" if name else "-p"
-        target = name if name else path
-        print(f"Removing {target}...")
-        cmd = base_cmd + ["env", "remove", flag, target]
-        if force:
-            cmd.append("--yes")
-        subprocess.run(cmd)
+    print(f"Found {len(envs)} environments in {UV_ENV_ROOT}.\n")
+
+    for env_path in envs:
+        env_name = env_path.name
+
+        if not force:
+            choice = input(f"Remove environment '{env_name}'? [y/N]: ").lower()
+            if choice != "y":
+                continue
+
+        print(f"  - Unregistering kernel: {env_name}...")
+        try:
+            subprocess.run(
+                ["jupyter", "kernelspec", "uninstall", env_name.lower(), "-y"],
+                capture_output=False,
+                text=True,
+                check=False,
+            )
+        except Exception as e:
+            print(f"    ! Note: Could not unregister kernel (may not exist): {e}")
+
+        print(f"  - Deleting folder: {env_path}...")
+        try:
+            shutil.rmtree(env_path)
+        except Exception as e:
+            print(f"    ! Error deleting folder: {e}")
+
+    mamba_cache = UV_ENV_ROOT / ".mamba_cache"
+    if mamba_cache.exists():
+        if force or input("\nClear Mamba package cache? [y/N]: ").lower() == "y":
+            print("Clearing cache...")
+            shutil.rmtree(mamba_cache)
+
+    print("\nCleanup complete.")
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="TeachOpenCADD: A teaching platform for computer-aided drug design (CADD) using open source packages and data.",
-        epilog=f"Visit '{PROJECT_URL}' for more information.",
-    )
+    parser = argparse.ArgumentParser(description="TeachOpenCADD Talktorial Runner")
+    parser.add_argument("talktorial", nargs="?", help="T-id to run (e.g., T001)")
     parser.add_argument(
-        "talktorial",
-        nargs="?",
-        help="Taltorial to run, e.g., T001 or 1",
+        "--cleanup", action="store_true", help="Remove all talktorial envs"
     )
-    parser.add_argument(
-        "--test", action="store_true", help="Test the talktorial using pytest"
-    )
-    parser.add_argument(
-        "--cleanup", action="store_true", help="Remove all talktorial (TXXX_*) envs"
-    )
-    parser.add_argument(
-        "--force", action="store_true", help="Don't ask for confirmation during cleanup"
-    )
+    parser.add_argument("--force", action="store_true", help="Skip confirmation")
     args = parser.parse_args()
+
     if args.cleanup:
-        cleanup_environments(force=args.force)
-    elif args.talktorial:
-        ident = int(str(args.talktorial).lstrip("T0").partition("_")[0])
-        run("T{0:03}".format(ident), args.test)
-    else:
+        cleanup(args.force)
+        return
+
+    if not args.talktorial:
         parser.print_help()
+        return
+
+    t_num = str(args.talktorial).lower().lstrip("t").split("_")[0]
+    t_id = f"T{int(t_num):03d}"
+
+    matches = list(BASE_DIR.glob(f"{t_id}_*"))
+    if not matches:
+        print(f"Error: Could not find folder for {t_id} in {BASE_DIR}")
+        sys.exit(1)
+
+    t_dir = matches[0]
+    req_file = t_dir / REQ_FILE
+    nb_file = t_dir / TALKTORIAL_FILE
+
+    env_name, is_conda = configure_env(t_id, req_file)
+    setup_jupyter(env_name, is_conda, nb_file)
+
+    py_exe, bin_dir = get_env_info(env_name, is_conda)
+    jupyter_bin = bin_dir / ("jupyter.exe" if IS_WIN else "jupyter")
+    if not jupyter_bin.exists():
+        print(f"Error: Jupyter binary not found at {jupyter_bin}")
+        sys.exit(1)
+
+    env_vars = os.environ.copy()
+    new_path = f"{bin_dir}{os.pathsep}{env_vars.get('PATH', '')}"
+    env_vars["PATH"] = new_path
+
+    if is_conda:
+        env_vars["CONDA_PREFIX"] = str(bin_dir.parent)
+        env_vars["MAMBA_ROOT_PREFIX"] = str(UV_ENV_ROOT / ".mamba_cache")
+
+    print(f"\nStarting {t_id}...")
+
+    run_command(
+        [str(jupyter_bin), "notebook", str(nb_file)], env=env_vars, capture_output=False
+    )
 
 
 if __name__ == "__main__":
