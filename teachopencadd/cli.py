@@ -51,9 +51,9 @@ def print_warn(message):
     console.print(f"[bold yellow]→[/bold yellow] {message}")
 
 
-def run_command(command, verbose=True, **kwargs):
+def run_command(command, **kwargs):
     """Wrapper for subprocess with better error reporting."""
-    kwargs.setdefault("capture_output", True)
+    kwargs.setdefault("capture_output", False)
     kwargs.setdefault("text", True)
 
     cmd_str = " ".join(map(str, command))
@@ -75,9 +75,6 @@ def run_command(command, verbose=True, **kwargs):
         if result.stderr:
             console.print(Panel(result.stderr, title="stderr", border_style="red"))
         sys.exit(result.returncode)
-
-    if verbose and result.stdout.strip():
-        console.print(Panel(result.stdout, title=cmd_str, border_style="green"))
 
     return result
 
@@ -419,10 +416,39 @@ def cleanup(force=False):
     print_status("Cleanup complete.")
 
 
+def test_talktorial(talktorial_dir: Path, py_exe: Path, bin_dir: Path):
+    """Installs testing dependencies and runs nbval on the notebook."""
+    talktorial = talktorial_dir / TALKTORIAL_FILE
+    if not talktorial.exists():
+        print(f"Error: Could not find {talktorial} for testing.")
+        sys.exit(1)
+
+    print(f"\n🧪 Testing talktorial {talktorial}...")
+
+    install_cmd = ["uv", "pip", "install", "--python", str(py_exe), "pytest", "nbval"]
+    run_command(install_cmd)
+
+    test_env = os.environ.copy()
+    test_env["PATH"] = f"{bin_dir}{os.pathsep}{test_env.get('PATH', '')}"
+
+    if not IS_WIN:
+        lib_dir = str(bin_dir.parent / "lib")
+        test_env["LD_LIBRARY_PATH"] = (
+            f"{lib_dir}{os.pathsep}{test_env.get('LD_LIBRARY_PATH', '')}"
+        )
+
+    print("Running pytest with nbval...\n")
+    run_command(
+        [str(py_exe), "-m", "pytest", "--nbval-lax", "--current-env", str(talktorial)],
+        env=test_env,
+        capture_output=False,
+    )
+
+
 def main():
     parser = argparse.ArgumentParser(description="TeachOpenCADD Talktorial Runner")
     parser.add_argument(
-        "talktorial", nargs="?", help="Talktorial ID to run (e.g., T001 or 2)"
+        "talktorial", nargs="?", help="Talktorial ID to run (e.g., T001 or 1)"
     )
     parser.add_argument(
         "--cleanup", action="store_true", help="Remove talktorial environments"
@@ -432,6 +458,11 @@ def main():
     )
     parser.add_argument(
         "--download-data", action="store_true", help="Download data for talktorial"
+    )
+    parser.add_argument(
+        "--test",
+        action="store_true",
+        help="Run nbval tests instead of starting Jupyter",
     )
     args = parser.parse_args()
 
@@ -451,41 +482,56 @@ def main():
         return 1
 
     if args.download_data:
-        t_dir = fetch_talktorial(t_id, data_only=True)
+        fetch_talktorial(t_id, data_only=True)
         return
 
-    matches = list(BASE_DIR.glob(f"{t_id}_*"))
+    BASE_DIR = Path("teachopencadd") / "talktorials"
+    matches = list(BASE_DIR.glob(f"{t_id}_*")) if BASE_DIR.exists() else []
+
     if not matches:
-        print_warn(
-            f"Could not find folder for {t_id} in {BASE_DIR}. Fetching from Github..."
-        )
+        print_warn(f"Could not find folder for {t_id} locally. Fetching from Github...")
         t_dir = fetch_talktorial(t_id)
     else:
         t_dir = matches[0]
+
     req_file = t_dir / REQ_FILE
     nb_file = t_dir / TALKTORIAL_FILE
-
     env_name, is_conda = configure_env(t_id, req_file)
-    setup_jupyter(env_name, is_conda, nb_file)
-
     py_exe, bin_dir = get_env_info(env_name, is_conda)
+
+    if args.test:
+        test_talktorial(t_dir, py_exe, bin_dir)
+        return
+
+    run_command(
+        [str(py_exe), "-m", "ipykernel", "install", "--user", "--name", env_name],
+    )
+
+    nb = nbformat.read(nb_file, as_version=4)
+    nb.metadata.kernelspec = {
+        "name": env_name,
+        "display_name": f"TeachOpenCADD: {env_name}",
+        "language": "python",
+    }
+    nbformat.write(nb, nb_file)
+
     jupyter_bin = bin_dir / ("jupyter.exe" if IS_WIN else "jupyter")
     if not jupyter_bin.exists():
-        print_err(f"Jupyter binary not found at {jupyter_bin}")
+        print_err(f"Error: Jupyter binary not found at {jupyter_bin}")
         sys.exit(1)
 
     env_vars = os.environ.copy()
-    new_path = f"{bin_dir}{os.pathsep}{env_vars.get('PATH', '')}"
-    env_vars["PATH"] = new_path
+    env_vars["PATH"] = f"{bin_dir}{os.pathsep}{env_vars.get('PATH', '')}"
 
     if is_conda:
         env_vars["CONDA_PREFIX"] = str(bin_dir.parent)
         env_vars["MAMBA_ROOT_PREFIX"] = str(UV_ENV_ROOT / ".mamba_cache")
 
     print_step(f"Starting {t_id}...")
-
     run_command(
-        [str(jupyter_bin), "notebook", str(nb_file)], env=env_vars, capture_output=False
+        [str(jupyter_bin), "notebook", str(nb_file)],
+        env=env_vars,
+        capture_output=False,
     )
 
 
