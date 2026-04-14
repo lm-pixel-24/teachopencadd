@@ -7,6 +7,7 @@ import json
 import argparse
 import nbformat
 import subprocess
+import requests
 from pathlib import Path
 
 ENV_PREFIX = "teachopencadd"
@@ -15,6 +16,13 @@ UV_ENV_ROOT = Path.home() / ".teachopencadd_envs"
 REQ_FILE = "requirements.txt"
 TALKTORIAL_FILE = "talktorial.ipynb"
 IS_WIN = sys.platform.startswith("win")
+REPO_OWNER = "volkamerlab"
+REPO_NAME = "teachopencadd"
+BRANCH = "dev"
+API_BASE = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/"
+RAW_BASE = f"https://raw.githubusercontent.com/{REPO_OWNER}/{REPO_NAME}"
+API_ROOT_PATH = "teachopencadd/talktorials/"
+EXCLUDE_FILES = [".gitignore"]
 
 
 def run_command(command, verbose=True, **kwargs):
@@ -195,6 +203,130 @@ def setup_jupyter(env_name, is_conda, talktorial_path):
     nbformat.write(nb, talktorial_path)
 
 
+def github_get(api_url, params=None, timeout=15):
+    """Perform an unauthenticated GET to the GitHub API. Raises on non-200."""
+    headers = {
+        "Accept": "application/vnd.github.v3+json",
+        "User-Agent": "teachopencadd-runner",
+    }
+
+    if "GITHUB_TOKEN" in os.environ:
+        headers["Authorization"] = f"token {os.environ['GITHUB_TOKEN']}"
+
+    try:
+        r = requests.get(api_url, headers=headers, params=params, timeout=timeout)
+    except requests.RequestException as e:
+        raise SystemExit(f"Network error while accessing {api_url}: {e}")
+
+    if r.status_code == 403 and "rate limit" in r.text.lower():
+        raise SystemExit(
+            "GitHub API rate limit reached (HTTP 403). "
+            "Set the GITHUB_TOKEN environment variable to increase your limit."
+        )
+    if r.status_code != 200:
+        raise SystemExit(f"GitHub API error {r.status_code} for {api_url}: {r.text}")
+    return r.json()
+
+
+def fetch_folder_contents(api_url, branch, exclude_files=None):
+    """Recursively fetch a list of (path, raw_download_url) tuples."""
+    params = {"ref": branch}
+    items = github_get(api_url, params=params)
+    file_list = []
+
+    for item in items:
+        item_type = item.get("type")
+        name = item.get("name")
+        path = item.get("path")
+        if item_type == "file":
+            if exclude_files and name in exclude_files:
+                continue
+            raw_url = f"{RAW_BASE}/{branch}/{path}"
+            file_list.append((path, raw_url))
+        elif item_type == "dir":
+            dir_api_url = item.get("url")
+            file_list.extend(fetch_folder_contents(dir_api_url, branch, exclude_files))
+        else:
+            print(f"Skipping unsupported type '{item_type}' at {path}")
+    return file_list
+
+
+def download_file(raw_url, local_path, timeout=30):
+    """Download a raw file url and save it to local_path."""
+    os.makedirs(os.path.dirname(local_path), exist_ok=True)
+    try:
+        r = requests.get(raw_url, timeout=timeout)
+    except requests.RequestException as e:
+        print(f"Network error downloading {raw_url}: {e}")
+        return False
+    if r.status_code == 200:
+        with open(local_path, "wb") as fh:
+            fh.write(r.content)
+        return True
+    else:
+        print(f"Failed to download {raw_url} (HTTP {r.status_code})")
+        return False
+
+
+def fetch_talktorial(t_id):
+    """
+    Main entry point for the runner. Finds the full folder name for t_id,
+    downloads it if missing, and returns the local Path object.
+    """
+    from pathlib import Path
+
+    # 1. Check if it already exists locally
+    existing = list(Path(".").glob(f"{t_id}_*"))
+    if existing:
+        return existing[0]
+
+    print(f"🔍 {t_id} not found locally. Querying GitHub API...")
+
+    # 2. Query the root talktorials directory to find the exact folder name
+    root_url = API_BASE + API_ROOT_PATH.rstrip("/")
+    root_contents = github_get(root_url, params={"ref": BRANCH})
+
+    target_folder_name = None
+    for item in root_contents:
+        if item["type"] == "dir" and item["name"].startswith(f"{t_id}_"):
+            target_folder_name = item["name"]
+            break
+
+    if not target_folder_name:
+        raise SystemExit(
+            f"Error: Could not find a talktorial matching '{t_id}' on GitHub."
+        )
+
+    # 3. Execute the download
+    api_root_with_path = API_BASE + API_ROOT_PATH + target_folder_name
+    output_dir = target_folder_name
+    os.makedirs(output_dir, exist_ok=True)
+
+    print(f"Fetching file list for '{target_folder_name}' from branch '{BRANCH}'...")
+    all_files = fetch_folder_contents(
+        api_root_with_path, BRANCH, exclude_files=EXCLUDE_FILES
+    )
+    print(f"Found {len(all_files)} files to download.\n")
+
+    for path, raw_url in all_files:
+        # Calculate local path relative to the downloaded folder
+        rel_local = os.path.relpath(path, API_ROOT_PATH + target_folder_name)
+        local_path = os.path.join(output_dir, rel_local)
+
+        if os.path.exists(local_path):
+            try:
+                if os.path.getsize(local_path) > 0:
+                    continue  # Skip silently
+            except OSError:
+                pass
+
+        print(f"Downloading: {rel_local}")
+        download_file(raw_url, local_path)
+
+    print(f"✅ Done. Files saved to: ./{output_dir}")
+    return Path(output_dir)
+
+
 def cleanup(force=False):
     """
     Removes managed environments and unregisters their Jupyter kernels.
@@ -269,10 +401,12 @@ def main():
 
     matches = list(BASE_DIR.glob(f"{t_id}_*"))
     if not matches:
-        print(f"Error: Could not find folder for {t_id} in {BASE_DIR}")
-        sys.exit(1)
-
-    t_dir = matches[0]
+        print(
+            f"    ! Warning: Could not find folder for {t_id} in {BASE_DIR}. Fetching from Github..."
+        )
+        t_dir = fetch_talktorial(t_id)
+    else:
+        t_dir = matches[0]
     req_file = t_dir / REQ_FILE
     nb_file = t_dir / TALKTORIAL_FILE
 
