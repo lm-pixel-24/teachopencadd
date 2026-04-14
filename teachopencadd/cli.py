@@ -34,14 +34,22 @@ RAW_BASE = f"https://raw.githubusercontent.com/{REPO_OWNER}/{REPO_NAME}"
 API_ROOT_PATH = "teachopencadd/talktorials/"
 EXCLUDE_FILES = [".gitignore"]
 
+
 def print_err(message):
     console.print(f"[bold red]✖ Error:[/bold red] {message}")
+
+
+def print_step(message):
+    console.print(Panel.fit(f"[bold]{message}[/bold]"))
+
 
 def print_status(message):
     console.print(f"[bold blue]→[/bold blue] {message}")
 
+
 def print_warn(message):
     console.print(f"[bold yellow]→[/bold yellow] {message}")
+
 
 def run_command(command, verbose=True, **kwargs):
     """Wrapper for subprocess with better error reporting."""
@@ -59,7 +67,9 @@ def run_command(command, verbose=True, **kwargs):
         sys.exit(1)
 
     if result.returncode != 0:
-        console.print(Panel(cmd_str, title="[red]Command Failed[/red]", border_style="red"))
+        console.print(
+            Panel(cmd_str, title="[red]Command Failed[/red]", border_style="red")
+        )
         if result.stdout:
             console.print(Panel(result.stdout, title="stdout", border_style="yellow"))
         if result.stderr:
@@ -70,6 +80,7 @@ def run_command(command, verbose=True, **kwargs):
         console.print(Panel(result.stdout, title=cmd_str, border_style="green"))
 
     return result
+
 
 def get_conda_bin():
     """Finds micromamba or conda executable."""
@@ -137,6 +148,7 @@ def get_env_info(env_name, is_conda):
 
 def configure_env(t_id, req_file):
     """Creates the environment (UV or Conda) and returns (env_name, is_conda)."""
+    print_step("Environment setup")
     py_ver, conda_pkgs, pip_pkgs = parse_requirements(req_file)
     env_name = f"{ENV_PREFIX}_{t_id}_py{py_ver.replace('.', '')}"
     env_path = UV_ENV_ROOT / env_name
@@ -144,7 +156,9 @@ def configure_env(t_id, req_file):
     is_conda = len(conda_pkgs) > 0
 
     if not is_conda:
-        print_status(f"[Pip/UV Mode] No conda dependencies. Building venv for {t_id}...")
+        print_status(
+            f"[Pip/UV Mode] No conda dependencies. Building venv for {t_id}..."
+        )
         if not env_path.exists():
             UV_ENV_ROOT.mkdir(parents=True, exist_ok=True)
             run_command(["uv", "venv", str(env_path), "--python", py_ver])
@@ -153,7 +167,9 @@ def configure_env(t_id, req_file):
         if pip_pkgs:
             run_command(["uv", "pip", "install", "--python", str(py_exe), *pip_pkgs])
     else:
-        print_status(f"[Conda Mode] Conda dependencies found. Using solver for {t_id}...")
+        print_status(
+            f"[Conda Mode] Conda dependencies found. Using solver for {t_id}..."
+        )
         conda = get_conda_bin()
         mamba_root = UV_ENV_ROOT / ".mamba_cache"
         mamba_root.mkdir(exist_ok=True)
@@ -295,16 +311,18 @@ def fetch_talktorial(t_id, data_only=False):
     Main entry point for the runner. Finds the full folder name for t_id,
     downloads it if missing, and returns the local Path object.
     """
+    if data_only:
+        print_step("Download talktorial data")
+    else:
+        print_step("Ensuring talktorial contents are available")
     from pathlib import Path
 
-    # 1. Check if it already exists locally
     existing = list(Path(".").glob(f"{t_id}_*"))
     if existing:
         return existing[0]
 
     print_status(f"{t_id} not found locally. Querying GitHub API...")
 
-    # 2. Query the root talktorials directory to find the exact folder name
     root_url = API_BASE + API_ROOT_PATH.rstrip("/")
     root_contents = github_get(root_url, params={"ref": BRANCH})
 
@@ -319,31 +337,36 @@ def fetch_talktorial(t_id, data_only=False):
             f"Error: Could not find a talktorial matching '{t_id}' on GitHub."
         )
 
-    # 3. Execute the download
     api_root_with_path = API_BASE + API_ROOT_PATH + target_folder_name
-    output_dir = target_folder_name
+    output_dir = "." if data_only else target_folder_name
     os.makedirs(output_dir, exist_ok=True)
 
-    print_status(f"Fetching file list for '{target_folder_name}' from branch '{BRANCH}'...")
-    all_files = fetch_folder_contents(
-        api_root_with_path, BRANCH, exclude_files=EXCLUDE_FILES
+    print_status(
+        f"Fetching file list for '{target_folder_name}' from branch '{BRANCH}'..."
     )
-    print_status(f"Found {len(all_files)} files to download.\n")
+    exclude_files = EXCLUDE_FILES
+    if data_only:
+        exclude_files += ["README.md", "talktorial.ipynb"]
+    all_files = fetch_folder_contents(
+        api_root_with_path, BRANCH, exclude_files=exclude_files
+    )
+    print_status(f"Found {len(all_files)} files to download.")
 
-    for path, raw_url in all_files:
-        # Calculate local path relative to the downloaded folder
+    for path, raw_url in track(all_files, description="Downloading files..."):
         rel_local = os.path.relpath(path, API_ROOT_PATH + target_folder_name)
         local_path = os.path.join(output_dir, rel_local)
 
         if os.path.exists(local_path):
             try:
                 if os.path.getsize(local_path) > 0:
-                    continue  # Skip silently
+                    continue
             except OSError:
                 pass
 
-        print_status(f"Downloading: {rel_local}")
-        download_file(raw_url, local_path)
+        download_file(
+            raw_url,
+            local_path,
+        )
 
     print_status(f"Done. Files saved to: ./{output_dir}")
     return Path(output_dir)
@@ -354,6 +377,7 @@ def cleanup(force=False):
     Removes managed environments and unregisters their Jupyter kernels.
     Defaults to interactive mode unless force=True.
     """
+    print_step("Environment cleanup")
     if not UV_ENV_ROOT.exists():
         print_status(f"No environment directory found at {UV_ENV_ROOT}.")
         return
@@ -365,7 +389,7 @@ def cleanup(force=False):
         print_status("No managed environments found.")
         return
 
-    print_status(f"Found {len(envs)} environments in {UV_ENV_ROOT}.\n")
+    print_status(f"Found {len(envs)} environments in {UV_ENV_ROOT}.")
 
     for env_path in envs:
         env_name = env_path.name
@@ -376,9 +400,7 @@ def cleanup(force=False):
 
         print_status(f"Unregistering kernel: {env_name}...")
         try:
-            run_command(
-                ["jupyter", "kernelspec", "uninstall", env_name.lower(), "-y"]
-            )
+            run_command(["jupyter", "kernelspec", "uninstall", env_name.lower(), "-y"])
         except Exception as e:
             print_warn(f"Could not unregister kernel (may not exist): {e}")
 
@@ -397,14 +419,20 @@ def cleanup(force=False):
     print_status("Cleanup complete.")
 
 
-
 def main():
     parser = argparse.ArgumentParser(description="TeachOpenCADD Talktorial Runner")
-    parser.add_argument("talktorial", nargs="?", help="T-id to run (e.g., T001)")
     parser.add_argument(
-        "--cleanup", action="store_true", help="Remove all talktorial envs"
+        "talktorial", nargs="?", help="Talktorial ID to run (e.g., T001 or 2)"
     )
-    parser.add_argument("--force", action="store_true", help="Skip confirmation")
+    parser.add_argument(
+        "--cleanup", action="store_true", help="Remove talktorial environments"
+    )
+    parser.add_argument(
+        "--force", action="store_true", help="Skip confirmation (cleanup)"
+    )
+    parser.add_argument(
+        "--download-data", action="store_true", help="Download data for talktorial"
+    )
     args = parser.parse_args()
 
     if args.cleanup:
@@ -416,7 +444,15 @@ def main():
         return
 
     t_num = str(args.talktorial).lower().lstrip("t").split("_")[0]
-    t_id = f"T{int(t_num):03d}"
+    try:
+        t_id = f"T{int(t_num):03d}"
+    except ValueError:
+        print_err(f"Invalid talktorial ID: '{args.talktorial}'")
+        return 1
+
+    if args.download_data:
+        t_dir = fetch_talktorial(t_id, data_only=True)
+        return
 
     matches = list(BASE_DIR.glob(f"{t_id}_*"))
     if not matches:
@@ -446,7 +482,7 @@ def main():
         env_vars["CONDA_PREFIX"] = str(bin_dir.parent)
         env_vars["MAMBA_ROOT_PREFIX"] = str(UV_ENV_ROOT / ".mamba_cache")
 
-    print_status(f"Starting {t_id}...")
+    print_step(f"Starting {t_id}...")
 
     run_command(
         [str(jupyter_bin), "notebook", str(nb_file)], env=env_vars, capture_output=False
