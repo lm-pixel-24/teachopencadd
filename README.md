@@ -6,11 +6,9 @@ A teaching platform for computer-aided drug design (CADD) using open source pack
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1486226.svg)](https://doi.org/10.5281/zenodo.1486226)
 
 <!-- markdown-link-check-disable-next-line -->
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/volkamerlab/TeachOpenCADD/master)
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 ![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/volkamerlab/teachopencadd)
-[![GH Actions CI ](https://github.com/volkamerlab/teachopencadd/workflows/CI/badge.svg)](https://github.com/volkamerlab/teachopencadd/actions?query=branch%3Amaster+workflow%3ACI)
-[![GH Actions Docs](https://github.com/volkamerlab/teachopencadd/workflows/Docs/badge.svg)](https://projects.volkamerlab.org/teachopencadd/)
+[![Test talktorials](https://github.com/volkamerlab/teachopencadd/actions/workflows/talktorial.yml/badge.svg)](https://github.com/volkamerlab/teachopencadd/actions/workflows/talktorial.yml)
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/teachopencadd/badges/downloads.svg)](https://anaconda.org/conda-forge/teachopencadd)
 
 ![GitHub closed pr](https://img.shields.io/github/issues-pr-closed-raw/volkamerlab/teachopencadd) ![GitHub open pr](https://img.shields.io/github/issues-pr-raw/volkamerlab/teachopencadd) ![GitHub closed issues](https://img.shields.io/github/issues-closed-raw/volkamerlab/teachopencadd) ![GitHub open issues](https://img.shields.io/github/issues/volkamerlab/teachopencadd)
@@ -45,8 +43,6 @@ Each topic is covered in an interactive Jupyter Notebook, using open source pack
 
 ## Get started
 
-<!-- markdown-link-check-disable -->
-[![GH Actions Docs](https://github.com/volkamerlab/teachopencadd/workflows/Docs/badge.svg)](https://projects.volkamerlab.org/teachopencadd/)
 
 If you can't wait and just want to read through the materials, please go to the read-only version [here](https://projects.volkamerlab.org/teachopencadd/talktorials.html).
 
@@ -60,26 +56,24 @@ The fastest way to explore is via **Google Colab**. No installation is required.
 ---
 
 ### Run Locally
-To set up the project on your machine, follow these steps:
+To set up the project on your machine you can use the TeachOpenCADD runner. This takes care of downloading the talktorial and necessary data and setting up a virtual environment for talktorials.
 
-#### 1. Clone the repository
-Open your terminal and clone the repository:
+#### Using `pip`
+You can install TeachOpenCADD easily via its pip package.
 ```bash
-git clone https://github.com/volkamerlab/teachopencadd.git
-cd teachopencadd
+pip install teachopencadd
+teachopencadd -h
 ```
 
-#### 2. Execute notebooks
-The inside the main directory run the following command, <span style="color:red">please make sure you have `conda` installed</span>.
-
+You can also use uv to directly run a notebook. There is no need to download the notebook by hand.
 ```bash
-python main.py -t T001
+uv run --with teachopencadd teachopencadd -h
 ```
 
-Here `T001` is the ID referring to the talktorial to execute.
-
-It will take couple of minutes if you're running a particular notebook for the very first time. First, internally it will create a conda virtual environment and install all the necessary python packages need, you can see the logs in the terminal. Then the notebook will launch in your browser.
-
+To start a notebook, you simply call the runner with the talktorial ID:
+```bash
+teachopencadd 6  # change the ID to whichever talktorial you are interested in
+```
 
 ## Open in Google Colab
 
