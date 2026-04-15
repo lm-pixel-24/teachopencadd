@@ -65,6 +65,7 @@ def run_command(command, **kwargs):
     try:
         result = subprocess.run(command, shell=IS_WIN, **kwargs)
     except KeyboardInterrupt:
+        console.print("")
         print_step("Shutting down TeachOpenCADD.")
         sys.exit(0)
     except FileNotFoundError:
@@ -404,7 +405,15 @@ def cleanup(force=False):
         print_status(f"Unregistering kernel: {env_name}...")
         try:
             run_command(
-                ["jupyter", "kernelspec", "uninstall", env_name.lower(), "-y"],
+                [
+                    "uv",
+                    "run",
+                    "jupyter",
+                    "kernelspec",
+                    "uninstall",
+                    env_name.lower(),
+                    "-y",
+                ],
             )
         except Exception as e:
             print_warn(f"Could not unregister kernel (may not exist): {e}")
@@ -459,15 +468,19 @@ def main():
         "talktorial", nargs="?", help="Talktorial ID to run (e.g., T001 or 1)"
     )
     parser.add_argument(
-        "--cleanup", action="store_true", help="Remove talktorial environments"
+        "-c", "--cleanup", action="store_true", help="Remove talktorial environments"
     )
     parser.add_argument(
-        "--force", action="store_true", help="Skip confirmation (cleanup)"
+        "-f", "--force", action="store_true", help="Skip confirmation (cleanup)"
     )
     parser.add_argument(
-        "--download-data", action="store_true", help="Download data for talktorial"
+        "-d",
+        "--download-data",
+        action="store_true",
+        help="Download data for talktorial",
     )
     parser.add_argument(
+        "-t",
         "--test",
         action="store_true",
         help="Run nbval tests instead of starting Jupyter",
@@ -479,7 +492,7 @@ def main():
         return
 
     if not args.talktorial:
-        parser.print_help()
+        console.print(parser.format_help())
         return
 
     t_num = str(args.talktorial).lower().lstrip("t").split("_")[0]
