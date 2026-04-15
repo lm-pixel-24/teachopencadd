@@ -14,23 +14,16 @@ Run Locally
 
     To set up the project on your machine, follow these steps:
 
-1. **Clone the repository:**
+1. **Install TeachOpenCADD:**
    Open your terminal and clone the repository:
 
    .. code-block:: bash
 
-       git clone https://github.com/volkamerlab/teachopencadd.git
-       cd teachopencadd
+      pip install teachopencadd
 
-2. **Install teachopencadd**
-   Install the teachopencadd package. You can also use ``uv`` for this step.
-
-   .. code-block:: bash
-
-       pip install -e .
 
 2. **Execute notebooks:**
-   Inside the main directory, run the following command.
+   Run the following command.
 
    .. code-block:: bash
 
