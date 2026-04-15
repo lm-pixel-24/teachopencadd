@@ -7,7 +7,7 @@ from time import sleep
 OWNER = "volkamerlab"
 REPO = "teachopencadd"
 API_ROOT_PATH = "teachopencadd/talktorials/"
-DEFAULT_BRANCH = "sepenv"
+DEFAULT_BRANCH = "master"
 EXCLUDE_FILES = {"talktorial.ipynb"}
 API_BASE = f"https://api.github.com/repos/{OWNER}/{REPO}/contents/{API_ROOT_PATH}"
 RAW_BASE = (
