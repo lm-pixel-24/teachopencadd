@@ -19,6 +19,11 @@ lab = [
     "nbconvert>=7.17.0",
 ]
 
+[project.urls]
+Homepage = "https://projects.volkamerlab.org/teachopencadd/"
+Repository = "https://github.com/volkamerlab/teachopencadd.git"
+Issues = "https://github.com/volkamerlab/teachopencadd/issues"
+
 [dependency-groups]
 docs = [
   "sphinx",
