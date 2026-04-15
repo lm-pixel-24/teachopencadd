@@ -64,6 +64,9 @@ def run_command(command, **kwargs):
 
     try:
         result = subprocess.run(command, shell=IS_WIN, **kwargs)
+    except KeyboardInterrupt:
+        print_step("Shutting down TeachOpenCADD.")
+        sys.exit(0)
     except FileNotFoundError:
         print_err(f"Command not found: {command[0]}")
         sys.exit(1)
