@@ -2,7 +2,7 @@
 numpy<2
 matplotlib
 seaborn
-nglview
+nglview<4
 pypdb
 #ipynb pkgs
 notebook
