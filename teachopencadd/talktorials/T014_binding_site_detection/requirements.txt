@@ -1,7 +1,7 @@
 #python=3.11
 numpy
 pypdb
-nglview
+nglview<4
 matplotlib
 matplotlib-venn
 #ipynb pkgs
