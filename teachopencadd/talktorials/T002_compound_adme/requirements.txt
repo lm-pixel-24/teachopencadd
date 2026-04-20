@@ -1,6 +1,6 @@
 #python=3.12
 notebook
-pandas==3.0.1
+pandas<3
 matplotlib
 numpy
 rdkit==2025.9.3
