@@ -1,6 +1,6 @@
 #python=3.11
 numpy
-nglview
+nglview<4
 matplotlib
 #ipynb pkgs
 notebook
