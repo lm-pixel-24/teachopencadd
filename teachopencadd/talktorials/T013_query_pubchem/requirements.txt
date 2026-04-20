@@ -1,8 +1,8 @@
 #python=3.12
 numpy
-nglview
+nglview<4
 matplotlib
-pandas==3.0.1
+pandas<3
 rdkit==2025.9.3
 #ipynb pkgs
 notebook
