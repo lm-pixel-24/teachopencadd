@@ -2,12 +2,12 @@
 numpy<2
 matplotlib
 seaborn
-nglview<4
+nglview
 pypdb
 #ipynb pkgs
 notebook
 nbformat
-ipywidgets
+ipywidgets<8
 jupyterlab-widgets
 #OpenCADD pkgs
 pandas==3.0.1
