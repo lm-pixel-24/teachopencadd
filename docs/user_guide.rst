@@ -1,11 +1,6 @@
 User guide
 ==========
 
-.. note::
-
-    We are assuming you have a working ``conda`` or ``micromamba`` installation on your computer. 
-    If this is not the case, please refer to the `official documentation <https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html>`_. 
-
 
 Run Locally
 -----------
