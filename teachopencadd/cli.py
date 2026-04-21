@@ -63,7 +63,7 @@ def run_command(command, **kwargs):
     print_status(f"Run '{cmd_str}'")
 
     try:
-        result = subprocess.run(command, shell=IS_WIN, **kwargs)
+        result = subprocess.run(command, shell=False, **kwargs)
     except KeyboardInterrupt:
         console.print("")
         print_step("Shutting down TeachOpenCADD.")
@@ -129,12 +129,7 @@ def parse_requirements(req_file):
             else:
                 pkg = line.split("#")[0].strip()
                 if pkg:
-                    if IS_WIN:
-                        pip_pkgs.append(
-                            f'"{pkg}"' if any(c in pkg for c in "<>") else pkg
-                        )
-                    else:
-                        pip_pkgs.append(pkg)
+                    pip_pkgs.append(pkg)
 
     return py_version, conda_pkgs, pip_pkgs
 
