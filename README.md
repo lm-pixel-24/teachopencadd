@@ -65,14 +65,14 @@ pip install teachopencadd
 teachopencadd -h
 ```
 
-You can also use uv to directly run a notebook. There is no need to download the notebook by hand.
-```bash
-uv run --with teachopencadd teachopencadd -h
-```
-
 To start a notebook, you simply call the runner with the talktorial ID:
 ```bash
 teachopencadd 6  # change the ID to whichever talktorial you are interested in
+```
+
+You can also use [uv](https://docs.astral.sh/uv/) to directly run a notebook. There is no need to download the notebook by hand.
+```bash
+uv run --with teachopencadd teachopencadd -h
 ```
 
 ## Open in Google Colab
