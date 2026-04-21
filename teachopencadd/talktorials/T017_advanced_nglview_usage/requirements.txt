@@ -6,5 +6,4 @@ matplotlib
 #ipynb pkgs
 notebook
 nbformat
-ipywidgets
-jupyterlab-widgets
+ipywidgets<8

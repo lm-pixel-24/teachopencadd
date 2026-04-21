@@ -1,11 +1,11 @@
 #python=3.11
 numpy
-nglview<4
+nglview
 matplotlib
 #ipynb pkgs
 notebook
 nbformat
-ipywidgets
+ipywidgets<8
 jupyterlab-widgets
 #OpenCADD pkgs
 pandas==3.0.1

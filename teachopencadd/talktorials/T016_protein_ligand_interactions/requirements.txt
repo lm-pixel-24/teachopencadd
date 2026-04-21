@@ -6,7 +6,7 @@ matplotlib
 #ipynb pkgs
 notebook
 nbformat
-ipywidgets
+ipywidgets<8
 jupyterlab-widgets
 #OpenCADD pkgs
 pandas
