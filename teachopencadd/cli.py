@@ -134,9 +134,9 @@ def parse_requirements(req_file):
     return py_version, conda_pkgs, pip_pkgs
 
 
-def get_env_info(env_name, is_conda):
+def get_env_info(env_name, is_conda, env_root: Path):
     """Returns (python_exe_path, bin_dir_path)."""
-    env_path = UV_ENV_ROOT / env_name
+    env_path = env_root / env_name
 
     if IS_WIN:
         py_exe = (
@@ -150,12 +150,12 @@ def get_env_info(env_name, is_conda):
     return py_exe, bin_dir
 
 
-def configure_env(t_id, req_file):
+def configure_env(t_id, req_file, env_root):
     """Creates the environment (UV or Conda) and returns (env_name, is_conda)."""
     print_step("Environment setup")
     py_ver, conda_pkgs, pip_pkgs = parse_requirements(req_file)
     env_name = f"{ENV_PREFIX}_{t_id}_py{py_ver.replace('.', '')}"
-    env_path = UV_ENV_ROOT / env_name
+    env_path = env_root / env_name
 
     is_conda = len(conda_pkgs) > 0
 
@@ -164,10 +164,10 @@ def configure_env(t_id, req_file):
             f"[Pip/UV Mode] No conda dependencies. Building venv for {t_id}..."
         )
         if not env_path.exists():
-            UV_ENV_ROOT.mkdir(parents=True, exist_ok=True)
+            env_root.mkdir(parents=True, exist_ok=True)
             run_command(["uv", "venv", str(env_path), "--python", py_ver])
 
-        py_exe, _ = get_env_info(env_name, is_conda=False)
+        py_exe, _ = get_env_info(env_name, False, env_root)
         if pip_pkgs:
             run_command(["uv", "pip", "install", "--python", str(py_exe), *pip_pkgs])
     else:
@@ -175,7 +175,7 @@ def configure_env(t_id, req_file):
             f"[Conda Mode] Conda dependencies found. Using solver for {t_id}..."
         )
         conda = get_conda_bin()
-        mamba_root = UV_ENV_ROOT / ".mamba_cache"
+        mamba_root = env_root / "mamba_cache"
         mamba_root.mkdir(exist_ok=True, parents=True)
 
         env_vars = {**os.environ, "MAMBA_ROOT_PREFIX": str(mamba_root)}
@@ -209,36 +209,37 @@ def configure_env(t_id, req_file):
                 env=env_vars,
             )
 
-        py_exe, _ = get_env_info(env_name, is_conda=True)
+        py_exe, _ = get_env_info(env_name, True, env_root)
         if pip_pkgs:
             run_command(["uv", "pip", "install", "--python", str(py_exe), *pip_pkgs])
 
-    return env_name, is_conda
+    return env_name, is_conda, py_ver
 
 
-def setup_jupyter(env_name, is_conda, talktorial_path):
+def setup_jupyter(env_name, is_conda, talktorial_path, env_root, py_ver, env):
     """Ensures ipykernel is installed and notebook metadata is updated."""
-    py_exe, _ = get_env_info(env_name, is_conda)
+    py_exe, _ = get_env_info(env_name, is_conda, env_root)
+    env_path = env_root / env_name
 
-    print_status(f"Registering Jupyter kernel for {env_name}...")
-    run_command(["uv", "pip", "install", "--python", str(py_exe), "ipykernel"])
-    run_command(
-        [
-            str(py_exe),
-            "-m",
-            "ipykernel",
-            "install",
-            "--user",
-            "--name",
-            env_name,
-            "--display-name",
-            f"TeachOpenCADD: {env_name}",
-        ]
-    )
+    # print_status(f"Registering Jupyter kernel for {env_name}...")
+    # run_command(
+    #     [
+    #         str(py_exe),
+    #         "-m",
+    #         "ipykernel",
+    #         "install",
+    #         "--sys-prefix",
+    #         "--name",
+    #         env_name,
+    #         "--display-name",
+    #         f"TeachOpenCADD: {env_name}",
+    #     ],
+    #     env=env,
+    # )
 
     nb = nbformat.read(talktorial_path, as_version=4)
     nb.metadata.kernelspec = {
-        "name": env_name,
+        "name": env_name.lower(),
         "display_name": f"TeachOpenCADD: {env_name}",
         "language": "python",
     }
@@ -376,18 +377,18 @@ def fetch_talktorial(t_id, data_only=False):
     return Path(output_dir)
 
 
-def cleanup(force=False):
+def cleanup(force, env_root):
     """
     Removes managed environments and unregisters their Jupyter kernels.
     Defaults to interactive mode unless force=True.
     """
     print_step("Environment cleanup")
-    if not UV_ENV_ROOT.exists():
+    if not env_root.exists():
         print_status(f"No environment directory found at {UV_ENV_ROOT}.")
         return
 
     pattern = re.compile(rf"^{ENV_PREFIX}_T\d{{3}}_")
-    envs = [d for d in UV_ENV_ROOT.iterdir() if d.is_dir() and pattern.match(d.name)]
+    envs = [d for d in env_root.iterdir() if d.is_dir() and pattern.match(d.name)]
 
     if not envs:
         print_status("No managed environments found.")
@@ -402,21 +403,21 @@ def cleanup(force=False):
             if not Confirm.ask(f"Remove environment '{env_name}'?"):
                 continue
 
-        print_status(f"Unregistering kernel: {env_name}...")
-        try:
-            run_command(
-                [
-                    "uv",
-                    "run",
-                    "jupyter",
-                    "kernelspec",
-                    "uninstall",
-                    env_name.lower(),
-                    "-y",
-                ],
-            )
-        except Exception as e:
-            print_warn(f"Could not unregister kernel (may not exist): {e}")
+        # print_status(f"Unregistering kernel: {env_name}...")
+        # try:
+        #     run_command(
+        #         [
+        #             "uv",
+        #             "run",
+        #             "jupyter",
+        #             "kernelspec",
+        #             "uninstall",
+        #             env_name.lower(),
+        #             "-y",
+        #         ],
+        #     )
+        # except Exception as e:
+        #     print_warn(f"Could not unregister kernel (may not exist): {e}")
 
         print_status(f"Deleting folder: {env_path}...")
         try:
@@ -424,7 +425,7 @@ def cleanup(force=False):
         except Exception as e:
             print_err(f"Error deleting folder: {e}")
 
-    mamba_cache = UV_ENV_ROOT / "mamba_cache"
+    mamba_cache = env_root / "mamba_cache"
     if mamba_cache.exists():
         if force or Confirm("Clear Mamba package cache?"):
             print_status("Clearing cache...")
@@ -433,7 +434,7 @@ def cleanup(force=False):
     print_status("Cleanup complete.")
 
 
-def test_talktorial(talktorial_dir: Path, py_exe: Path, bin_dir: Path):
+def test_talktorial(talktorial_dir: Path, py_exe: Path, bin_dir: Path, test_env):
     """Installs testing dependencies and runs nbval on the notebook."""
     talktorial = talktorial_dir / TALKTORIAL_FILE
     if not talktorial.exists():
@@ -445,7 +446,6 @@ def test_talktorial(talktorial_dir: Path, py_exe: Path, bin_dir: Path):
     install_cmd = ["uv", "pip", "install", "--python", str(py_exe), "pytest", "nbval"]
     run_command(install_cmd)
 
-    test_env = os.environ.copy()
     test_env["PATH"] = f"{bin_dir}{os.pathsep}{test_env.get('PATH', '')}"
 
     if not IS_WIN:
@@ -485,10 +485,20 @@ def main():
         action="store_true",
         help="Run nbval tests instead of starting Jupyter",
     )
+    parser.add_argument(
+        "-e",
+        "--env-dir",
+        type=str,
+        help="Location for environment storage",
+        metavar="DIR",
+        default=str(UV_ENV_ROOT),
+    )
     args = parser.parse_args()
 
+    env_root = Path(args.env_dir)
+    print_status(f"Environment directory: {env_root}")
     if args.cleanup:
-        cleanup(args.force)
+        cleanup(args.force, env_root)
         return
 
     if not args.talktorial:
@@ -517,40 +527,53 @@ def main():
 
     req_file = t_dir / REQ_FILE
     nb_file = t_dir / TALKTORIAL_FILE
-    env_name, is_conda = configure_env(t_id, req_file)
-    py_exe, bin_dir = get_env_info(env_name, is_conda)
+    env_name, is_conda, py_ver = configure_env(t_id, req_file, env_root)
+    py_exe, bin_dir = get_env_info(env_name, is_conda, env_root)
 
-    if args.test:
-        test_talktorial(t_dir, py_exe, bin_dir)
-        return
+    env_path = env_root / env_name
+    private_jupyter_dir = env_path / "share" / "jupyter"
 
-    run_command(
-        [str(py_exe), "-m", "ipykernel", "install", "--user", "--name", env_name],
+    env_vars = os.environ.copy()
+
+    env_vars["PYTHONNOUSERSITE"] = "1"
+    env_vars["JUPYTER_DATA_DIR"] = str(private_jupyter_dir)
+    env_vars["JUPYTER_RUNTIME_DIR"] = str(private_jupyter_dir / "runtime")
+    env_vars["JUPYTER_CONFIG_DIR"] = str(private_jupyter_dir / "config")
+    env_vars["JUPYTER_PATH"] = str(private_jupyter_dir)
+    env_vars["PYTHONPATH"] = str(
+        (env_path / "lib" / f"python{py_ver}" / "site-packages")
     )
 
-    nb = nbformat.read(nb_file, as_version=4)
-    nb.metadata.kernelspec = {
-        "name": env_name,
-        "display_name": f"TeachOpenCADD: {env_name}",
-        "language": "python",
-    }
-    nbformat.write(nb, nb_file)
+    setup_jupyter(env_name, is_conda, nb_file, env_root, py_ver, env_vars)
 
     jupyter_bin = bin_dir / ("jupyter.exe" if IS_WIN else "jupyter")
     if not jupyter_bin.exists():
         print_err(f"Error: Jupyter binary not found at {jupyter_bin}")
         sys.exit(1)
 
-    env_vars = os.environ.copy()
-    env_vars["PATH"] = f"{bin_dir}{os.pathsep}{env_vars.get('PATH', '')}"
+    new_path = f"{bin_dir}{os.pathsep}{env_vars.get('PATH', '')}"
+    env_vars["PATH"] = new_path
+    print_status(f"Set $PATH to '{new_path}'")
 
     if is_conda:
         env_vars["CONDA_PREFIX"] = str(bin_dir.parent)
-        env_vars["MAMBA_ROOT_PREFIX"] = str(UV_ENV_ROOT / ".mamba_cache")
+        env_vars["MAMBA_ROOT_PREFIX"] = str(env_root / "mamba_cache")
+
+    if args.test:
+        test_talktorial(t_dir, py_exe, bin_dir, env_vars)
+        return
 
     print_step(f"Starting {t_id}...")
+    # --MultiKernelManager.default_kernel_name=my_fav_kernel
     run_command(
-        [str(jupyter_bin), "notebook", str(nb_file)],
+        [
+            str(jupyter_bin),
+            "notebook",
+            str(nb_file),
+            # f"--MultiKernelManager.default_kernel_name={env_name}",
+            "--port",
+            "9999",
+        ],
         env=env_vars,
         capture_output=False,
     )
