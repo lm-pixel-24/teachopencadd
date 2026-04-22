@@ -26,7 +26,6 @@ def run_command(command: list[Any], **kwargs: Any) -> subprocess.CompletedProces
         result = subprocess.run(command, shell=False, **kwargs)
     except KeyboardInterrupt:
         console.print("")
-        from rich.panel import Panel
 
         console.print(Panel.fit("[bold]Shutting down TeachOpenCADD.[/bold]"))
         sys.exit(0)
