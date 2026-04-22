@@ -1,85 +1,115 @@
-"""
-Command Line Interface for the project.
-"""
-
-from pathlib import Path
 import argparse
-import subprocess
-import shutil
 import sys
+from pathlib import Path
 
-from teachopencadd.utils import _greeting_string, _run_jlab_string, _talktorial_list_string
-from . import _version
+from .config import Settings, settings as default_settings
+from .console import print_err, print_status, print_step
+from .env import build_jupyter_env_vars, cleanup, configure_env
+from .exceptions import TeachOpenCADDError
+from .github import fetch_talktorial
+from .jupyter import setup_jupyter, test_talktorial
+from .models import Talktorial
+from .runner import run_command
 
-TALKTORIAL_FOLDER_NAME = "teachopencadd-talktorials"
+
+def _parse_t_id(raw: str) -> str:
+    cleaned = raw.lower().lstrip("t").split("_")[0]
+    try:
+        return f"T{int(cleaned):03d}"
+    except ValueError:
+        raise TeachOpenCADDError(f"Invalid talktorial ID: '{raw}'")
 
 
-def main():
-    """
-    Main CLI function enabling the following signatures:
-    - teachopencadd start path/to/workspace
-    """
+def _find_or_fetch_talktorial(t_id: str, cfg: Settings) -> Talktorial:
+    matches = list(cfg.base_dir.glob(f"{t_id}_*")) if cfg.base_dir.exists() else []
+    if not matches:
+        print_status(f"Could not find {t_id} locally. Fetching from GitHub...")
+        directory = fetch_talktorial(t_id, cfg=cfg)
+    else:
+        directory = matches[0]
+    return Talktorial(t_id=t_id, directory=directory)
 
-    parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers()
 
-    # Subcommand `start`
-    subparser_start = subparsers.add_parser("start")
-    subparser_start.add_argument(
-        "workspace", type=str, help="Path to directory for user workspace"
+def main(cfg: Settings = default_settings) -> int:
+    parser = argparse.ArgumentParser(
+        description="TeachOpenCADD Talktorial Runner",
+        epilog="Visit https://projects.volkamerlab.org/teachopencadd for further information.",
     )
-    subparser_start.set_defaults(func=_start)
-
-    # For future additional subcommands (e.g. `teachopencadd test`),
-    # - copy the `subparser_start` code block above,
-    # - replace `start` with `test`, and
-    # - add a function called `test` that implements the behavior you want.
-
+    parser.add_argument("talktorial", nargs="?", help="Talktorial ID (e.g. T001 or 1)")
+    parser.add_argument(
+        "-c", "--cleanup", action="store_true", help="Remove talktorial environments"
+    )
+    parser.add_argument(
+        "-f", "--force", action="store_true", help="Skip confirmation prompts"
+    )
+    parser.add_argument(
+        "-d", "--download-data", action="store_true", help="Download data only"
+    )
+    parser.add_argument("-t", "--test", action="store_true", help="Run nbval tests")
+    parser.add_argument(
+        "-e",
+        "--env-dir",
+        type=str,
+        default=str(cfg.uv_env_root),
+        metavar="DIR",
+        help="Location for environment storage",
+    )
+    parser.add_argument(
+        "-b",
+        "--branch",
+        type=str,
+        default=cfg.branch,
+        metavar="BRANCH",
+        help="Github branch for downloads",
+    )
     args = parser.parse_args()
-    try:
-        args.func(args)
-    except AttributeError:
-        # Run help if no arguments were given
-        subprocess.run(["teachopencadd", "-h"])
 
-
-def _start(args):
-    """
-    Starts a new TeachOpenCADD workspace.
-
-    Parameters
-    ----------
-    args : argparse.Namespace
-        Arguments for start subcommand.
-
-    Notes
-    -----
-    Procedure:
-    - copy all talktorial folders to a folder called `TALKTORIAL_FOLDER_NAME` in a user-defined
-      directory
-    - if such a folder already exists, do nothing but print message
-    - print list of talktorials in workspace
-    - print instructions on how to fire up the talktorials in JupyterLab
-    """
-
-    print(_greeting_string())
-
-    # Source and destination directories for talktorials
-    talktorials_src_dir = Path(_version.__file__).parent / "talktorials"
-    talktorials_dst_dir = Path(args.workspace) / TALKTORIAL_FOLDER_NAME
-
-    if not Path(args.workspace).is_dir():
-        print(f"Could not find user-defined location `{args.workspace}`.")
-        sys.exit()
-
-    if not talktorials_src_dir.is_dir():
-        print(f"Could not find talktorials at expected location `{talktorials_src_dir}`.")
-        sys.exit()
+    cfg.branch = args.branch
+    env_root = Path(args.env_dir)
+    print_status(f"Environment directory: {env_root}")
 
     try:
-        shutil.copytree(talktorials_src_dir, talktorials_dst_dir)
-    except FileExistsError:
-        print(f"Workspace exists already at location `{talktorials_dst_dir}`.")
+        if args.cleanup:
+            cleanup(args.force, env_root, cfg)
+            return 0
 
-    print(_talktorial_list_string(talktorials_dst_dir))
-    print(_run_jlab_string(talktorials_dst_dir))
+        if not args.talktorial:
+            print(parser.format_help())
+            return 0
+
+        t_id = _parse_t_id(args.talktorial)
+
+        if args.download_data:
+            fetch_talktorial(t_id, data_only=True, cfg=cfg)
+            return 0
+
+        talk = _find_or_fetch_talktorial(t_id, cfg)
+        env = configure_env(t_id, talk.req_file, env_root, cfg)
+        env_vars = build_jupyter_env_vars(env)
+
+        setup_jupyter(env, talk.nb_file)
+
+        jupyter_bin = env.bin_dir / ("jupyter.exe" if cfg.is_win else "jupyter")
+        if not jupyter_bin.exists():
+            raise TeachOpenCADDError(f"Jupyter binary not found at {jupyter_bin}")
+
+        if args.test:
+            test_talktorial(talk.nb_file, env, env_vars)
+            return 0
+
+        print_step(f"Starting {t_id}...")
+        run_command(
+            [str(jupyter_bin), "notebook", str(talk.nb_file), "--port", "9999"],
+            env=env_vars,
+            capture_output=False,
+        )
+
+    except TeachOpenCADDError as exc:
+        print_err(str(exc))
+        return 1
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

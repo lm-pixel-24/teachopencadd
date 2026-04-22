@@ -38,9 +38,9 @@ def download_ligands(kiba_filepath, ligand_filepath):
         for _, row in df.iterrows():
             try:
                 print(
-                    row[0],
+                    row.iloc[0],
                     pd.DataFrame.from_records(
-                        mol_finder.filter(chembl_id=row[0]).only(["molecule_structures"])
+                        mol_finder.filter(chembl_id=row.iloc[0]).only(["molecule_structures"])
                     ).iloc[0, 0]["canonical_smiles"],
                     sep="\t",
                     file=ligands,

@@ -1,0 +1,104 @@
+name: Test talktorials
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master, dev]
+  schedule:
+    # every other week on Monday at 3 am
+    - cron: "0 3/336 * * 1"
+
+jobs:
+  cli-scripts:
+    name: ${{ matrix.talktorial }} on ${{ matrix.os }}
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        talktorial:
+          - T001
+          - T002
+          - T003 
+          - T004
+          - T005
+          - T006
+          - T007
+          - T008
+          - T009
+          - T010
+          - T011
+          - T012
+          - T013
+          - T014
+          - T015
+          - T016
+          - T017
+          - T018
+          - T019
+          - T020
+          - T021
+          - T022
+          - T023
+          - T024
+          - T025
+          - T026
+          - T027
+          - T028
+          - T033
+          - T034
+          - T035
+          - T036
+          - T037
+          - T038
+
+        exclude:
+          - talktorial: T001 # long runtime and url timeout.
+          - talktorial: T018 # long runtime
+          - talktorial: T034 # memory overload due to DL packages.
+          - talktorial: T035 # memory overload due to DL packages.
+          - talktorial: T036 # memory overload due to DL packages.
+          - talktorial: T037 # memory overload due to DL packages.
+          - talktorial: T038 # memory overload due to DL packages.
+          - os: windows-latest
+            talktorial: T008 # OpenCADD win path
+          - os: windows-latest
+            talktorial: T010 # OpenCADD win path
+          - os: windows-latest
+            talktorial: T015 # OpenCADD win path
+          - os: windows-latest
+            talktorial: T016 # OpenCADD win path
+          - os: windows-latest
+            talktorial: T019 # conda pkg issue on Windows.
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Micromamba
+        uses: mamba-org/setup-micromamba@v3
+        with:
+          environment-name: teachopencadd-env
+          create-args: >-
+            python=3.11
+          cache-downloads: true
+          cache-environment: true
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install Python dependencies with uv
+        shell: bash -l {0}
+        run: |
+          uv pip install -e "."
+
+      - name: Run talktorial
+        shell: bash -l {0}
+        run: |
+          echo "Running ${{ matrix.talktorial }}"
+          python -m teachopencadd.cli ${{ matrix.talktorial }} --test
