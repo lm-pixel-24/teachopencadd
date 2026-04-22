@@ -31,7 +31,10 @@ def _find_or_fetch_talktorial(t_id: str, cfg: Settings) -> Talktorial:
 
 
 def main(cfg: Settings = default_settings) -> int:
-    parser = argparse.ArgumentParser(description="TeachOpenCADD Talktorial Runner")
+    parser = argparse.ArgumentParser(
+        description="TeachOpenCADD Talktorial Runner",
+        epilog="Visit https://projects.volkamerlab.org/teachopencadd for further information.",
+    )
     parser.add_argument("talktorial", nargs="?", help="Talktorial ID (e.g. T001 or 1)")
     parser.add_argument(
         "-c", "--cleanup", action="store_true", help="Remove talktorial environments"
