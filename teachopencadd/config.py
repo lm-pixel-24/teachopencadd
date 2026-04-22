@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 
-@dataclass(frozen=True)
+@dataclass
 class Settings:
     env_prefix: str = "teachopencadd"
     base_dir: Path = Path("teachopencadd") / "talktorials"

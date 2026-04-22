@@ -54,8 +54,17 @@ def main(cfg: Settings = default_settings) -> int:
         metavar="DIR",
         help="Location for environment storage",
     )
+    parser.add_argument(
+        "-b",
+        "--branch",
+        type=str,
+        default=cfg.branch,
+        metavar="BRANCH",
+        help="Github branch for downloads",
+    )
     args = parser.parse_args()
 
+    cfg.branch = args.branch
     env_root = Path(args.env_dir)
     print_status(f"Environment directory: {env_root}")
 
