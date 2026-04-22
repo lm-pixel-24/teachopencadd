@@ -1,9 +1,12 @@
 name: Test talktorials
 on:
   push:
-    branches: [master, dev, cli_refactor]
+    branches: [master]
   pull_request:
     branches: [master, dev]
+  schedule:
+    # every other week on Monday at 3 am
+    - cron: "0 3/336 * * 1"
 
 jobs:
   cli-scripts:
