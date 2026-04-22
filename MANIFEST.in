@@ -1,5 +1,6 @@
 include LICENSE
 include MANIFEST.in
+include teachopencadd/_version.py
 
 graft teachopencadd
 exclude teachopencadd/talktorials
