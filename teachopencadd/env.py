@@ -206,7 +206,7 @@ def cleanup(force: bool, cfg: Settings = default_settings) -> None:
 
     from rich.prompt import Confirm
 
-    for env_path in envs:
+    for env_path in sorted(envs):
         if not force and not Confirm.ask(f"Remove environment '{env_path.name}'?"):
             continue
 
