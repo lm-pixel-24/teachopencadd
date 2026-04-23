@@ -50,7 +50,7 @@ def main(cfg: Settings = default_settings) -> int:
         "-e",
         "--env-dir",
         type=str,
-        default=str(cfg.uv_env_root),
+        default=str(cfg.env_root),
         metavar="DIR",
         help="Location for environment storage",
     )
@@ -65,12 +65,11 @@ def main(cfg: Settings = default_settings) -> int:
     args = parser.parse_args()
 
     cfg.branch = args.branch
-    env_root = Path(args.env_dir)
-    print_status(f"Environment directory: {env_root}")
+    cfg.env_root = Path(args.env_dir)
 
     try:
         if args.cleanup:
-            cleanup(args.force, env_root, cfg)
+            cleanup(args.force, cfg)
             return 0
 
         if not args.talktorial:
@@ -84,7 +83,7 @@ def main(cfg: Settings = default_settings) -> int:
             return 0
 
         talk = _find_or_fetch_talktorial(t_id, cfg)
-        env = configure_env(t_id, talk.req_file, env_root, cfg)
+        env = configure_env(t_id, talk.req_file, cfg)
         env_vars = build_jupyter_env_vars(env)
 
         setup_jupyter(env, talk.nb_file)
