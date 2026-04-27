@@ -59,7 +59,6 @@ Python packages
   - ``tqdm``: https://tqdm.github.io/
   - ``requests_cache``: https://requests-cache.readthedocs.io
   - ``redo``: https://github.com/mozilla-releng/redo
-  - ``google-colab``: https://pypi.org/project/google-colab/
   - ``condacolab``: https://pypi.org/project/condacolab/
 
 - Continuous integration:
