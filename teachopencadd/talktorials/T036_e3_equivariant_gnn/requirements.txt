@@ -1,15 +1,14 @@
-#python=3.11
+#python=3.12
 --find-links
 https://data.pyg.org/whl/torch-2.1.0+cpu.html
-torch==2.1.0
-torch_geometric>=2.4.0
+torch
+torch_geometric
 torch-scatter
-numpy<2
+numpy
 matplotlib
 tqdm
-pandas==3.0.1
+pandas
 #ipynb pkgs
 notebook
 nbformat
-ipywidgets
 jupyterlab-widgets
