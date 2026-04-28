@@ -149,11 +149,13 @@ def main(cfg: Settings = default_settings) -> int:
         if not jupyter_bin.exists():
             raise TeachOpenCADDError(f"Jupyter binary not found at {jupyter_bin}")
 
+        topic = dict(_talktorial_list)[t_id]
         if args.test:
+            print_step(f"Testing {t_id}: {topic}")
             test_talktorial(talk.nb_file, env, env_vars)
             return 0
 
-        print_step(f"Starting {t_id}...")
+        print_step(f"Starting {t_id}: {topic}...")
         run_command(
             [str(jupyter_bin), "notebook", str(talk.nb_file), "--port", "9999"],
             env=env_vars,
