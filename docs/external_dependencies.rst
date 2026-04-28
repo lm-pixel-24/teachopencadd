@@ -27,7 +27,7 @@ Python packages
 - Deep learning: 
 
   - ``pytorch``: https://pytorch.org/
-  - ``pyg``: https://pyg.org/
+  - ``pyg``: https://pytorch-geometric.readthedocs.io/en/latest/
 
 - Data science (PyData stack):
 
