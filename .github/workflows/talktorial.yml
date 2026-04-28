@@ -102,3 +102,22 @@ jobs:
         run: |
           echo "Running ${{ matrix.talktorial }}"
           python -m teachopencadd.cli ${{ matrix.talktorial }} --test
+
+  check-talktorials-success:
+    name: All Talktorials Passed
+    needs: [cli-scripts]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check matrix results
+        shell: bash
+        run: |
+          # Get the result of the 'cli-scripts' job
+          result="${{ needs.cli-scripts.result }}"
+          if [[ $result == "success" ]]; then
+            echo "All talktorial tests passed successfully!"
+            exit 0
+          else
+            echo "One or more matrix jobs failed or were cancelled."
+            exit 1
+          fi
