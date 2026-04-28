@@ -4,7 +4,7 @@ from typing import Any
 
 from rich.panel import Panel
 
-from .console import console, print_err, print_status
+from .console import print_err, print_status, printc
 from .exceptions import TeachOpenCADDError
 
 
@@ -25,21 +25,19 @@ def run_command(command: list[Any], **kwargs: Any) -> subprocess.CompletedProces
     try:
         result = subprocess.run(command, shell=False, **kwargs)
     except KeyboardInterrupt:
-        console.print("")
+        printc("")
 
-        console.print(Panel.fit("[bold]Shutting down TeachOpenCADD.[/bold]"))
+        printc(Panel.fit("[bold]Shutting down TeachOpenCADD.[/bold]"))
         sys.exit(0)
     except FileNotFoundError:
         raise TeachOpenCADDError(f"Command not found: {command[0]}")
 
     if result.returncode != 0:
-        console.print(
-            Panel(cmd_str, title="[red]Command Failed[/red]", border_style="red")
-        )
+        printc(Panel(cmd_str, title="[red]Command Failed[/red]", border_style="red"))
         if result.stdout:
-            console.print(Panel(result.stdout, title="stdout", border_style="yellow"))
+            printc(Panel(result.stdout, title="stdout", border_style="yellow"))
         if result.stderr:
-            console.print(Panel(result.stderr, title="stderr", border_style="red"))
+            printc(Panel(result.stderr, title="stderr", border_style="red"))
         raise TeachOpenCADDError(
             f"Command exited with code {result.returncode}: {cmd_str}"
         )

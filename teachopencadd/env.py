@@ -67,7 +67,6 @@ def _get_conda_bin() -> str:
 def configure_env(
     t_id: str,
     req_file: Path,
-    env_root: Path,
     cfg: Settings = default_settings,
 ) -> Environment:
     """
@@ -77,17 +76,18 @@ def configure_env(
     micromamba/mamba/conda otherwise.
     """
     print_step("Environment setup")
+    print_status(f"Environment directory: {cfg.env_root}")
     py_ver, conda_pkgs, pip_pkgs = parse_requirements(req_file)
 
     env_name = f"{cfg.env_prefix}_{t_id}_py{py_ver.replace('.', '')}"
-    env_path = env_root / env_name
+    env_path = cfg.env_root / env_name
     is_conda = bool(conda_pkgs)
     env = Environment(name=env_name, path=env_path, is_conda=is_conda, py_ver=py_ver)
 
     if not is_conda:
-        _setup_uv_env(env, pip_pkgs, env_root)
+        _setup_uv_env(env, pip_pkgs, cfg.env_root)
     else:
-        _setup_conda_env(env, conda_pkgs, pip_pkgs, env_root)
+        _setup_conda_env(env, conda_pkgs, pip_pkgs, cfg.env_root)
 
     return env
 
@@ -187,26 +187,26 @@ def build_jupyter_env_vars(env: Environment) -> dict[str, str]:
     return env_vars
 
 
-def cleanup(force: bool, env_root: Path, cfg: Settings = default_settings) -> None:
+def cleanup(force: bool, cfg: Settings = default_settings) -> None:
     """Remove managed environments (and optionally the mamba cache)."""
     print_step("Environment cleanup")
 
-    if not env_root.exists():
-        print_status(f"No environment directory found at {env_root}.")
+    if not cfg.env_root.exists():
+        print_status(f"No environment directory found at {cfg.env_root}.")
         return
 
     pattern = re.compile(rf"^{cfg.env_prefix}_T\d{{3}}_")
-    envs = [d for d in env_root.iterdir() if d.is_dir() and pattern.match(d.name)]
+    envs = [d for d in cfg.env_root.iterdir() if d.is_dir() and pattern.match(d.name)]
 
     if not envs:
         print_status("No managed environments found.")
         return
 
-    print_status(f"Found {len(envs)} environment(s) in {env_root}.")
+    print_status(f"Found {len(envs)} environment(s) in {cfg.env_root}.")
 
     from rich.prompt import Confirm
 
-    for env_path in envs:
+    for env_path in sorted(envs):
         if not force and not Confirm.ask(f"Remove environment '{env_path.name}'?"):
             continue
 
@@ -216,7 +216,7 @@ def cleanup(force: bool, env_root: Path, cfg: Settings = default_settings) -> No
         except Exception as exc:
             raise TeachOpenCADDError(f"Error deleting {env_path}: {exc}") from exc
 
-    mamba_cache = env_root / "mamba_cache"
+    mamba_cache = cfg.env_root / "mamba_cache"
     if mamba_cache.exists():
         if force or Confirm.ask("Clear Mamba package cache?"):
             print_status("Clearing cache...")

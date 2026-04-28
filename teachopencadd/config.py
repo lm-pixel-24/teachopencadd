@@ -7,7 +7,7 @@ from pathlib import Path
 class Settings:
     env_prefix: str = "teachopencadd"
     base_dir: Path = Path("teachopencadd") / "talktorials"
-    uv_env_root: Path = field(
+    env_root: Path = field(
         default_factory=lambda: Path.home() / ".teachopencadd_envs"
     )
     req_file: str = "requirements.txt"

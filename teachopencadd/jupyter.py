@@ -2,7 +2,7 @@ from pathlib import Path
 
 import nbformat
 
-from .console import print_err, print_status, print_step
+from .console import print_err, print_status
 from .exceptions import TeachOpenCADDError
 from .models import Environment
 from .runner import run_command
@@ -27,8 +27,6 @@ def test_talktorial(
     """Install pytest + nbval into *env* and run them against *nb_file*."""
     if not nb_file.exists():
         raise TeachOpenCADDError(f"Could not find notebook for testing: {nb_file}")
-
-    print_step(f"Testing {nb_file}...")
 
     run_command(
         ["uv", "pip", "install", "--python", str(env.py_exe), "pytest", "nbval"]
