@@ -1,0 +1,11 @@
+#python=3.12
+numpy
+nglview
+matplotlib
+pandas<3
+rdkit==2025.9.3
+#ipynb pkgs
+notebook
+nbformat
+ipywidgets<8
+jupyterlab-widgets

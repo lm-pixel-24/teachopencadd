@@ -43,7 +43,10 @@ def main():
         nbcontent = "> This talktorial is still under development"
 
     if args.output:
-        with open(Path(args.notebook).parent / args.output, "w") as f:
+        output_file = Path(args.output).name
+        target_path = Path(args.notebook).parent / output_file
+
+        with open(target_path, "w") as f:
             f.write(nbcontent + "\n")
     else:
         print(nbcontent)

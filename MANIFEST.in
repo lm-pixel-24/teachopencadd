@@ -1,6 +1,15 @@
 include LICENSE
 include MANIFEST.in
-include versioneer.py
+include teachopencadd/_version.py
 
 graft teachopencadd
+exclude teachopencadd/talktorials
 global-exclude *.py[cod] __pycache__ *.so .ipynb_checkpoints
+
+recursive-exclude teachopencadd/talktorials *
+
+prune docs
+prune tests
+prune devtools
+
+global-exclude *.py[cod] __pycache__ *.so *.ipynb_checkpoints/*

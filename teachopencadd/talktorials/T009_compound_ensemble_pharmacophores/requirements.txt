@@ -1,0 +1,12 @@
+#python=3.12
+mpl-tools
+nglview
+scikit-learn
+matplotlib
+pandas==3.0.1
+rdkit==2025.9.3
+#ipynb pkgs
+notebook
+nbformat
+ipywidgets<8
+jupyterlab-widgets

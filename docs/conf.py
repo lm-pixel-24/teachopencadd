@@ -1,42 +1,40 @@
 # -*- coding: utf-8 -*-
-#
-# Configuration file for the Sphinx documentation builder.
-#
-# This file does only contain a selection of the most common options. For a
-# full list see the documentation:
-# http://www.sphinx-doc.org/en/stable/config
-
-# -- Path setup --------------------------------------------------------------
-
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-
-# Incase the project was not installed
 import os
 import sys
-
-sys.path.insert(0, os.path.abspath(".."))
-
-import teachopencadd
 import sphinx_material
-
 from datetime import datetime
+from importlib.metadata import version as get_version
+from pathlib import Path
+
+# -- Path setup --------------------------------------------------------------
+# With 'uv run', the package is installed in the environment,
+# so we no longer need the sys.path.insert(0, os.path.abspath("..")) hack.
 
 # -- Project information -----------------------------------------------------
-
 project = "TeachOpenCADD"
+current_year = datetime.now().year
 copyright = (
-    f"2018-{datetime.now().year}, Volkamer Lab. Project structure based on the "
+    f"2018-{current_year}, Volkamer Lab. Project structure based on the "
     "Computational Molecular Science Python Cookiecutter version 1.1"
 )
 author = "Volkamer Lab"
 
-# The short X.Y version
-version = teachopencadd.__version__.split("+")[0]
-# The full version, including alpha/beta/rc tags
-release = version
+# Modern version control: pulls directly from pyproject.toml/metadata
+try:
+    release = get_version("teachopencadd")
+    version = ".".join(release.split(".")[:2])
+except Exception:
+    version = "dev"
+    release = "dev"
 
+
+# -- Scrape for images -------------------------------------------------------
+talktorials_dir = Path(__file__).parent.parent / "teachopencadd" / "talktorials"
+image_folders = [str(p.absolute()) for p in talktorials_dir.glob("**/images")]
+
+html_static_path = ["_static"] + image_folders
+
+suppress_warnings = ["docutils.duplicate_substitution"]
 
 # -- General configuration ---------------------------------------------------
 
@@ -103,7 +101,9 @@ highlight_language = "none"
 # -- HTML theme settings ------------------------------------------------
 html_short_title = "TeachOpenCADD"
 html_show_sourcelink = True
-html_sidebars = {"**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]}
+html_sidebars = {
+    "**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]
+}
 
 html_theme_path = sphinx_material.html_theme_path()
 html_context = sphinx_material.get_html_context()
@@ -161,37 +161,6 @@ html_theme_options = {
 htmlhelp_basename = "teachopencadddoc"
 
 
-# -- Options for LaTeX output ------------------------------------------------
-
-latex_elements = {
-    # The paper size ('letterpaper' or 'a4paper').
-    #
-    # 'papersize': 'letterpaper',
-    # The font size ('10pt', '11pt' or '12pt').
-    #
-    # 'pointsize': '10pt',
-    # Additional stuff for the LaTeX preamble.
-    #
-    # 'preamble': '',
-    # Latex figure (float) alignment
-    #
-    # 'figure_align': 'htbp',
-}
-
-# Grouping the document tree into LaTeX files. List of tuples
-# (source start file, target name, title,
-#  author, documentclass [howto, manual, or own class]).
-latex_documents = [
-    (
-        master_doc,
-        "teachopencadd.tex",
-        "TeachOpenCADD Documentation",
-        "teachopencadd",
-        "manual",
-    ),
-]
-
-
 # -- Options for manual page output ------------------------------------------
 
 # One entry per manual page. List of tuples
@@ -237,11 +206,11 @@ ogp_type = "website"
 # -- Thumbnails --
 
 nbsphinx_thumbnails = {
-    'talktorials/T011_query_online_api_webservices': '_static/images/thumbnails/T011.svg',
-    'talktorials/T033_molecular_representations': '_static/images/thumbnails/T033.png',
-    'talktorials/T034_recurrent_neural_networks': '_static/images/thumbnails/T034.png',
-    'talktorials/T035_graph_neural_networks': '_static/images/thumbnails/T035.png',
-    'talktorials/T036_e3_equivariant_gnn': '_static/images/thumbnails/T036.png',
-    'talktorials/T037_uncertainty_estimation': '_static/images/thumbnails/T037.png',
-    'talktorials/T038_protein_ligand_interaction_prediction': '_static/images/thumbnails/T038.png',
+    "talktorials/T011_query_online_api_webservices": "_static/images/thumbnails/T011.svg",
+    "talktorials/T033_molecular_representations": "_static/images/thumbnails/T033.png",
+    "talktorials/T034_recurrent_neural_networks": "_static/images/thumbnails/T034.png",
+    "talktorials/T035_graph_neural_networks": "_static/images/thumbnails/T035.png",
+    "talktorials/T036_e3_equivariant_gnn": "_static/images/thumbnails/T036.png",
+    "talktorials/T037_uncertainty_estimation": "_static/images/thumbnails/T037.png",
+    "talktorials/T038_protein_ligand_interaction_prediction": "_static/images/thumbnails/T038.png",
 }

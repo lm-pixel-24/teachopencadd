@@ -1,0 +1,12 @@
+#python=3.12
+setuptools
+numpy
+pandas==3.0.1
+matplotlib
+nglview
+MDAnalysis
+#ipynb pkgs
+notebook
+nbformat
+ipywidgets<8
+jupyterlab-widgets

@@ -1,0 +1,17 @@
+#python=3.12
+pandas
+rdkit
+nglview
+#ipynb pkgs
+notebook
+nbformat
+ipywidgets<8
+jupyterlab-widgets
+mdtraj # conda
+openmm # conda
+openmmforcefields # conda
+openff-toolkit # conda
+pdbfixer # conda
+pypdb # conda
+rdkit # conda
+
