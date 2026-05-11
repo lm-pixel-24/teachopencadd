@@ -1,6 +1,6 @@
 #python=3.12
 torch
-numpy<2
+#numpy<2
 pandas==3.0.1
 matplotlib
 tqdm
